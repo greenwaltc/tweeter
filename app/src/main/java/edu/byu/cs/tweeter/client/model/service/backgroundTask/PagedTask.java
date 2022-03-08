@@ -64,7 +64,7 @@ public abstract class PagedTask<T> extends AuthenticatedTask {
     }
 
     @Override
-    protected final void runTask() throws IOException {
+    protected void runTask() throws IOException {
         Pair<List<T>, Boolean> pageOfItems = getItems();
 
         items = pageOfItems.getFirst();
@@ -84,5 +84,25 @@ public abstract class PagedTask<T> extends AuthenticatedTask {
     protected final void loadSuccessBundle(Bundle msgBundle) {
         msgBundle.putSerializable(ITEMS_KEY, (Serializable) items);
         msgBundle.putBoolean(MORE_PAGES_KEY, hasMorePages);
+    }
+
+    public static String getItemsKey() {
+        return ITEMS_KEY;
+    }
+
+    public static String getMorePagesKey() {
+        return MORE_PAGES_KEY;
+    }
+
+    public boolean isHasMorePages() {
+        return hasMorePages;
+    }
+
+    public void setItems(List<T> items) {
+        this.items = items;
+    }
+
+    public void setHasMorePages(boolean hasMorePages) {
+        this.hasMorePages = hasMorePages;
     }
 }
