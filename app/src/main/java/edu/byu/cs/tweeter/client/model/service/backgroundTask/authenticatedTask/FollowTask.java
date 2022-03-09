@@ -1,14 +1,23 @@
 package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask;
 
 import android.os.Handler;
+import android.util.Log;
+
+import java.io.IOException;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.FollowRequest;
+import edu.byu.cs.tweeter.model.net.response.FollowResponse;
 
 /**
  * Background task that establishes a following relationship between two users.
  */
 public class FollowTask extends AuthenticatedTask {
+    private static final String LOG_TAG = "FollowTask";
+    static final String URL_PATH = "/follow";
+
     /**
      * The user that is being followed.
      */
@@ -21,15 +30,23 @@ public class FollowTask extends AuthenticatedTask {
 
     @Override
     protected void runTask() {
+        try {
 
+            String targetUserAlias = followee == null ? null : followee.getAlias();
 
-        // We could do this from the presenter, without a task and handler, but we will
-        // eventually access the database from here when we aren't using dummy data.
+            FollowRequest request = new FollowRequest(getAuthToken(), targetUserAlias);
+            FollowResponse response = getServerFacade().follow(request, URL_PATH);
 
-        // Call sendSuccessMessage if successful
-        sendSuccessMessage();
-        // or call sendFailedMessage if not successful
-        // sendFailedMessage()
+            if (response.isSuccess()) {
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to get feed", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
 }

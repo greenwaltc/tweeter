@@ -1,9 +1,9 @@
 package edu.byu.cs.tweeter.client.model.service;
 
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.BackgroundTaskUtils;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.PostStatusTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask.GetFeedTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask.GetStoryTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.PostStatusTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.PagedTaskHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.SimpleNotificationHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.observer.PagedObserverInterface;

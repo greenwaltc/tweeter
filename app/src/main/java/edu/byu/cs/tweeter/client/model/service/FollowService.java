@@ -2,12 +2,12 @@ package edu.byu.cs.tweeter.client.model.service;
 
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.BackgroundTaskUtils;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.FollowTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.GetFollowersCountTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask.GetFollowersTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.GetFollowingCountTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.UnfollowTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.getCountTask.GetFollowersCountTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.getCountTask.GetFollowingCountTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask.GetFollowersTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.GetCountHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.IsFollowerHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.PagedTaskHandler;

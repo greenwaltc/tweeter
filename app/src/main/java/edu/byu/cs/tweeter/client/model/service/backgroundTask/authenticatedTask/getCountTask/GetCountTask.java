@@ -1,8 +1,9 @@
-package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.getCountTask;
 
 import android.os.Bundle;
 import android.os.Handler;
 
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.AuthenticatedTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -27,17 +28,10 @@ public abstract class GetCountTask extends AuthenticatedTask {
         return targetUser;
     }
 
-    @Override
-    protected void runTask() {
-        count = runCountTask();
 
-        // Call sendSuccessMessage if successful
-        sendSuccessMessage();
-        // or call sendFailedMessage if not successful
-        // sendFailedMessage()
+    public void setCount(int count) {
+        this.count = count;
     }
-
-    protected abstract int runCountTask();
 
     @Override
     protected void loadSuccessBundle(Bundle msgBundle) {
