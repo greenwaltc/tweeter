@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.model.service.backgroundTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask;
 
 import android.os.Handler;
 import android.util.Log;
@@ -10,19 +10,22 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
-import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
+import edu.byu.cs.tweeter.model.net.request.FeedRequest;
+import edu.byu.cs.tweeter.model.net.request.StoryRequest;
+import edu.byu.cs.tweeter.model.net.response.FeedResponse;
+import edu.byu.cs.tweeter.model.net.response.StoryResponse;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
- * Background task that retrieves a page of statuses from a user's feed.
+ * Background task that retrieves a page of statuses from a user's story.
  */
-public class GetFeedTask extends PagedStatusTask {
-    private static final String LOG_TAG = "GetFeedTask";
-    static final String URL_PATH = "/getfeed";
+public class GetStoryTask extends PagedStatusTask {
 
-    public GetFeedTask(AuthToken authToken, User targetUser, int limit, Status lastStatus,
-                       Handler messageHandler) {
+    private static final String LOG_TAG = "GetStoryTask";
+    static final String URL_PATH = "/getstory";
+
+    public GetStoryTask(AuthToken authToken, User targetUser, int limit, Status lastStatus,
+                        Handler messageHandler) {
         super(authToken, targetUser, limit, lastStatus, messageHandler);
     }
 
@@ -30,13 +33,13 @@ public class GetFeedTask extends PagedStatusTask {
     protected void runTask() throws IOException {
         try {
             String targetUserAlias = getTargetUser() == null ? null : getTargetUser().getAlias();
-            String lastFolloweeAlias = getLastItem() == null ? null : getLastItem().getAlias();
+            Status lastStatus = getLastItem() == null ? null : getLastItem();
 
-            FollowingRequest request = new FollowingRequest(getAuthToken(), targetUserAlias, getLimit(), lastFolloweeAlias);
-            FollowingResponse response = getServerFacade().getFollowees(request, URL_PATH);
+            StoryRequest request = new StoryRequest(getAuthToken(), targetUserAlias, getLimit(), lastStatus);
+            StoryResponse response = getServerFacade().getStory(request, URL_PATH);
 
             if(response.isSuccess()) {
-                setItems(response.getFollowees());
+                setItems(response.getStatuses());
                 setHasMorePages(response.getHasMorePages());
                 sendSuccessMessage();
             }
@@ -44,7 +47,7 @@ public class GetFeedTask extends PagedStatusTask {
                 sendFailedMessage(response.getMessage());
             }
         } catch (IOException | TweeterRemoteException ex) {
-            Log.e(LOG_TAG, "Failed to get followees", ex);
+            Log.e(LOG_TAG, "Failed to get feed", ex);
             sendExceptionMessage(ex);
         }
     }

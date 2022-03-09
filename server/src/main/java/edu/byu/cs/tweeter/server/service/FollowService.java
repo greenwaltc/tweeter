@@ -1,6 +1,8 @@
 package edu.byu.cs.tweeter.server.service;
 
+import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
+import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.server.dao.FollowDAO;
 
@@ -36,5 +38,23 @@ public class FollowService {
      */
     FollowDAO getFollowingDAO() {
         return new FollowDAO();
+    }
+
+    /**
+     * Returns the followers of the user specified. Uses information in
+     * the request object to limit the number of followers returned and to return the next set of
+     * followers after any that were returned in a previous request. Uses the {@link FollowDAO} to
+     * get the followers.
+     *
+     * @param request contains the data required to fulfill the request.
+     * @return the followers.
+     */
+    public FollowersResponse getFollowers(FollowersRequest request) {
+        if(request.getFolloweeAlias() == null) {
+            throw new RuntimeException("[BadRequest] Request needs to have a follower alias");
+        } else if(request.getLimit() <= 0) {
+            throw new RuntimeException("[BadRequest] Request needs to have a positive limit");
+        }
+        return getFollowingDAO().getFollowers(request);
     }
 }

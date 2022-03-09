@@ -1,7 +1,8 @@
-package edu.byu.cs.tweeter.client.model.service.backgroundTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask;
 
 import android.os.Handler;
 
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.BackgroundTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 
 public abstract class AuthenticatedTask extends BackgroundTask {

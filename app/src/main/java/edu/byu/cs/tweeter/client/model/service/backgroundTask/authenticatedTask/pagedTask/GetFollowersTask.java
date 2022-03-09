@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.model.service.backgroundTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask;
 
 import android.os.Handler;
 import android.util.Log;
@@ -6,39 +6,40 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.List;
 
-import edu.byu.cs.tweeter.client.model.net.ServerFacade;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
+import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
- * Background task that retrieves a page of other users being followed by a specified user.
+ * Background task that retrieves a page of followers.
  */
-public class GetFollowingTask extends PagedUserTask {
+public class GetFollowersTask extends PagedUserTask {
 
-    private static final String LOG_TAG = "GetFollowingTask";
+    private static final String LOG_TAG = "GetFollowersTask";
 
-    static final String URL_PATH = "/getfollowing";
+    static final String URL_PATH = "/getfollowers";
 
-    public GetFollowingTask(AuthToken authToken, User targetUser, int limit, User lastFollowee,
+    public GetFollowersTask(AuthToken authToken, User targetUser, int limit, User lastFollower,
                             Handler messageHandler) {
-        super(authToken, targetUser, limit, lastFollowee, messageHandler);
+        super(authToken, targetUser, limit, lastFollower, messageHandler);
     }
 
     @Override
     protected void runTask() throws IOException {
         try {
             String targetUserAlias = getTargetUser() == null ? null : getTargetUser().getAlias();
-            String lastFolloweeAlias = getLastItem() == null ? null : getLastItem().getAlias();
+            String lastFollowerAlias = getLastItem() == null ? null : getLastItem().getAlias();
 
-            FollowingRequest request = new FollowingRequest(getAuthToken(), targetUserAlias, getLimit(), lastFolloweeAlias);
-            FollowingResponse response = getServerFacade().getFollowees(request, URL_PATH);
+            FollowersRequest request = new FollowersRequest(getAuthToken(), targetUserAlias, getLimit(), lastFollowerAlias);
+            FollowersResponse response = getServerFacade().getFollowers(request, URL_PATH);
 
             if(response.isSuccess()) {
-                setItems(response.getFollowees());
+                setItems(response.getFollowers());
                 setHasMorePages(response.getHasMorePages());
                 sendSuccessMessage();
             }

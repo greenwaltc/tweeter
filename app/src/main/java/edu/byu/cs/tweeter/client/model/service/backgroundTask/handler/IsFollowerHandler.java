@@ -2,7 +2,7 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask.handler;
 
 import android.os.Bundle;
 
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.IsFollowerTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.observer.IsFollowerObserverInterface;
 
 public class IsFollowerHandler extends BackgroundTaskHandler<IsFollowerObserverInterface> {

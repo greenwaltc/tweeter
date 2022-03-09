@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.model.service.backgroundTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticateTask;
 
 import android.os.Handler;
 

@@ -1,10 +1,10 @@
 package edu.byu.cs.tweeter.client.model.service;
 
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.BackgroundTaskUtils;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetUserTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.LoginTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.LogoutTask;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.RegisterTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.GetUserTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticateTask.LoginTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.LogoutTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticateTask.RegisterTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.AuthenticateHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.GetUserHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.SimpleNotificationHandler;

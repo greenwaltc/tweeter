@@ -2,7 +2,7 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask.handler;
 
 import android.os.Bundle;
 
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetCountTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.GetCountTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.observer.GetCountObserverInterface;
 
 public class GetCountHandler extends BackgroundTaskHandler<GetCountObserverInterface>{

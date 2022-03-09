@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.client.model.service.backgroundTask;
+package edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.pagedTask;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.authenticatedTask.AuthenticatedTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.util.Pair;
