@@ -5,7 +5,9 @@ import java.io.IOException;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
 //import edu.byu.cs.tweeter.model.net.request.LoginRequest;
+import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
+import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 //import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 
 /**
@@ -16,7 +18,7 @@ public class ServerFacade {
 
     // TODO: Set this to the invoke URL of your API. Find it by going to your API in AWS, clicking
     //  on stages in the right-side menu, and clicking on the stage you deployed your API to.
-    private static final String SERVER_URL = "Insert your API invoke URL here";
+    private static final String SERVER_URL = "https://uk5n5iv1kg.execute-api.us-west-2.amazonaws.com/milestone3";
 
     private final ClientCommunicator clientCommunicator = new ClientCommunicator(SERVER_URL);
 
@@ -26,15 +28,15 @@ public class ServerFacade {
      * @param request contains all information needed to perform a login.
      * @return the login response.
      */
-//    public LoginResponse login(LoginRequest request, String urlPath) throws IOException, TweeterRemoteException {
-//        LoginResponse response = clientCommunicator.doPost(urlPath, request, null, LoginResponse.class);
-//
-//        if(response.isSuccess()) {
-//            return response;
-//        } else {
-//            throw new RuntimeException(response.getMessage());
-//        }
-//    }
+    public LoginResponse login(LoginRequest request, String urlPath) throws IOException, TweeterRemoteException {
+        LoginResponse response = clientCommunicator.doPost(urlPath, request, null, LoginResponse.class);
+
+        if(response.isSuccess()) {
+            return response;
+        } else {
+            throw new RuntimeException(response.getMessage());
+        }
+    }
 
     /**
      * Returns the users that the user specified in the request is following. Uses information in
