@@ -9,7 +9,7 @@ import java.io.IOException;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.GetUserRequest;
+import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
 
 /**
@@ -40,7 +40,7 @@ public class GetUserTask extends AuthenticatedTask {
 
             String targetUserAlias = alias == null ? null : alias;
 
-            GetUserRequest request = new GetUserRequest(getAuthToken(), targetUserAlias);
+            SimpleUserRequest request = new SimpleUserRequest(getAuthToken(), targetUserAlias);
             GetUserResponse response = getServerFacade().getUser(request, URL_PATH);
 
             if (response.isSuccess()) {

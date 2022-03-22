@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.Status;
-import edu.byu.cs.tweeter.model.net.request.FeedRequest;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
-import edu.byu.cs.tweeter.model.net.request.StoryRequest;
-import edu.byu.cs.tweeter.model.net.response.FeedResponse;
-import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
-import edu.byu.cs.tweeter.model.net.response.StoryResponse;
+import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
+import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
+import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.util.FakeData;
 
 public class StatusDAO {
-    public FeedResponse getFeed(FeedRequest request) {
+    public StatusesResponse getFeed(StatusesRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;
 //        assert request.getLastStatus() != null;
@@ -25,7 +24,7 @@ public class StatusDAO {
 
         if(request.getLimit() > 0) {
             if (allStatuses != null) {
-                int statusesIndex = getStatusesStartingIndex(request.getLastStatus(), allStatuses);
+                int statusesIndex = getStatusesStartingIndex(request.getLastItem(), allStatuses);
 
                 for(int limitCounter = 0; statusesIndex < allStatuses.size() && limitCounter < request.getLimit(); statusesIndex++, limitCounter++) {
                     responseStatuses.add(allStatuses.get(statusesIndex));
@@ -35,10 +34,10 @@ public class StatusDAO {
             }
         }
 
-        return new FeedResponse(responseStatuses, hasMorePages);
+        return new StatusesResponse(responseStatuses, hasMorePages);
     }
 
-    public StoryResponse getStory(StoryRequest request) {
+    public StatusesResponse getStory(StatusesRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;
 //        assert request.getLastStatus() != null;
@@ -50,7 +49,7 @@ public class StatusDAO {
 
         if(request.getLimit() > 0) {
             if (allStatuses != null) {
-                int statusesIndex = getStatusesStartingIndex(request.getLastStatus(), allStatuses);
+                int statusesIndex = getStatusesStartingIndex(request.getLastItem(), allStatuses);
 
                 for(int limitCounter = 0; statusesIndex < allStatuses.size() && limitCounter < request.getLimit(); statusesIndex++, limitCounter++) {
                     responseStatuses.add(allStatuses.get(statusesIndex));
@@ -60,7 +59,7 @@ public class StatusDAO {
             }
         }
 
-        return new StoryResponse(responseStatuses, hasMorePages);
+        return new StatusesResponse(responseStatuses, hasMorePages);
     }
 
     private int getStatusesStartingIndex(Status lastStatus, List<Status> allStatuses) {
@@ -90,8 +89,8 @@ public class StatusDAO {
         return new FakeData();
     }
 
-    public PostStatusResponse postStatus(PostStatusRequest request) {
+    public SimpleResponse postStatus(PostStatusRequest request) {
         // todo: uses dummy data
-        return new PostStatusResponse(true);
+        return new SimpleResponse(true);
     }
 }

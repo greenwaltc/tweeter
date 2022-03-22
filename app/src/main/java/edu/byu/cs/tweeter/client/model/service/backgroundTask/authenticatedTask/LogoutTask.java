@@ -7,10 +7,8 @@ import java.io.IOException;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
-import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
-import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 
 /**
  * Background task that logs out a user (i.e., ends a session).
@@ -29,7 +27,7 @@ public class LogoutTask extends AuthenticatedTask {
         try {
 
             LogoutRequest request = new LogoutRequest(getAuthToken());
-            LogoutResponse response = getServerFacade().logout(request, URL_PATH);
+            SimpleResponse response = getServerFacade().logout(request, URL_PATH);
 
             if (response.isSuccess()) {
                 sendSuccessMessage();

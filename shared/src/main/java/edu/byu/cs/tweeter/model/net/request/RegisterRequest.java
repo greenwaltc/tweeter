@@ -1,15 +1,14 @@
 package edu.byu.cs.tweeter.model.net.request;
 
-public class RegisterRequest {
-    private String firstName, lastName, username, password, image;
+public class RegisterRequest extends AuthenticateRequest{
+    private String firstName, lastName, image;
 
-    RegisterRequest () {}
+    private RegisterRequest(){}
 
     public RegisterRequest(String firstName, String lastName, String username, String password, String image) {
+        super(username, password);
         this.firstName = firstName;
         this.lastName = lastName;
-        this.username = username;
-        this.password = password;
         this.image = image;
     }
 
@@ -27,22 +26,6 @@ public class RegisterRequest {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getImage() {

@@ -2,10 +2,10 @@ package edu.byu.cs.tweeter.model.net.response;
 
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class GetUserResponse {
-    private boolean success;
-    private String message;
+public class GetUserResponse extends Response{
     private User user;
+
+    private GetUserResponse(){}
 
     /**
      * Failure constructor
@@ -13,8 +13,7 @@ public class GetUserResponse {
      * @param message
      */
     public GetUserResponse(boolean success, String message) {
-        this.success = success;
-        this.message = message;
+        super(success, message);
     }
 
     /**
@@ -23,24 +22,8 @@ public class GetUserResponse {
      * @param user
      */
     public GetUserResponse(boolean success, User user) {
-        this.success = success;
+        super(success);
         this.user = user;
-    }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public User getUser() {

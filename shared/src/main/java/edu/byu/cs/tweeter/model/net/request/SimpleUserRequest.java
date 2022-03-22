@@ -2,23 +2,15 @@ package edu.byu.cs.tweeter.model.net.request;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 
-public class GetUserRequest {
-    private AuthToken authToken;
+public class SimpleUserRequest extends AuthenticatedRequest{
+
     private String targetUserAlias;
 
-    public GetUserRequest() {}
+    private SimpleUserRequest(){}
 
-    public GetUserRequest(AuthToken authToken, String targetUserAlias) {
-        this.authToken = authToken;
+    public SimpleUserRequest(AuthToken authToken, String targetUserAlias) {
+        super(authToken);
         this.targetUserAlias = targetUserAlias;
-    }
-
-    public AuthToken getAuthToken() {
-        return authToken;
-    }
-
-    public void setAuthToken(AuthToken authToken) {
-        this.authToken = authToken;
     }
 
     public String getTargetUserAlias() {

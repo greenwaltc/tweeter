@@ -8,8 +8,8 @@ import java.io.IOException;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.GetFollowingCountRequest;
-import edu.byu.cs.tweeter.model.net.response.GetFollowingCountResponse;
+import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
+import edu.byu.cs.tweeter.model.net.response.CountResponse;
 
 /**
  * Background task that queries how many other users a specified user is following.
@@ -29,8 +29,8 @@ public class GetFollowingCountTask extends GetCountTask {
 
             String targetUserAlias = getTargetUser() == null ? null : getTargetUser().getAlias();
 
-            GetFollowingCountRequest request = new GetFollowingCountRequest(getAuthToken(), targetUserAlias);
-            GetFollowingCountResponse response = getServerFacade().getFollowingCount(request, URL_PATH);
+            SimpleUserRequest request = new SimpleUserRequest(getAuthToken(), targetUserAlias);
+            CountResponse response = getServerFacade().getFollowingCount(request, URL_PATH);
 
             if (response.isSuccess()) {
                 setCount(response.getCount());

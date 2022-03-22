@@ -8,8 +8,8 @@ import java.io.IOException;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
-import edu.byu.cs.tweeter.model.net.response.UnfollowResponse;
+import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 
 /**
  * Background task that removes a following relationship between two users.
@@ -35,8 +35,8 @@ public class UnfollowTask extends AuthenticatedTask {
 
             String targetUserAlias = followee == null ? null : followee.getAlias();
 
-            UnfollowRequest request = new UnfollowRequest(getAuthToken(), targetUserAlias);
-            UnfollowResponse response = getServerFacade().unfollow(request, URL_PATH);
+            SimpleUserRequest request = new SimpleUserRequest(getAuthToken(), targetUserAlias);
+            SimpleResponse response = getServerFacade().unfollow(request, URL_PATH);
 
             if (response.isSuccess()) {
                 sendSuccessMessage();

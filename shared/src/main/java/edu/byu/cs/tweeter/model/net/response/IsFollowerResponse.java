@@ -1,9 +1,9 @@
 package edu.byu.cs.tweeter.model.net.response;
 
-public class IsFollowerResponse {
-    private boolean success;
-    private String message;
+public class IsFollowerResponse extends Response{
     private boolean follower;
+
+    private IsFollowerResponse(){}
 
     /**
      * Failure constructor.
@@ -11,8 +11,7 @@ public class IsFollowerResponse {
      * @param message
      */
     public IsFollowerResponse(boolean success, String message) {
-        this.success = success;
-        this.message = message;
+        super(success, message);
     }
 
     /**
@@ -21,24 +20,8 @@ public class IsFollowerResponse {
      * @param follower
      */
     public IsFollowerResponse(boolean success, boolean follower) {
-        this.success = success;
+        super(success);
         this.follower = follower;
-    }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public boolean isFollower() {

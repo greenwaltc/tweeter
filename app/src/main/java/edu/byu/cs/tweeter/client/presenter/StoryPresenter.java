@@ -7,6 +7,8 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class StoryPresenter extends PagedPresenter{
 
+    private GetStoryObserver getStoryObserver;
+
     public StoryPresenter(PagedViewInterface<Status> view) {
         super(view);
     }
@@ -18,10 +20,17 @@ public class StoryPresenter extends PagedPresenter{
 
     @Override
     protected void getItems(User user) {
-        getStatusService().getStory(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, (Status) getLastItem(), new GetStoryObserver());
+        getStatusService().getStory(Cache.getInstance().getCurrUserAuthToken(), user, PAGE_SIZE, (Status) getLastItem(), getStoryObserver());
     }
 
-    public class GetStoryObserver extends BaseGetItemsObserver {
+    public GetStoryObserver getStoryObserver() {
+        if (getStoryObserver == null) {
+            getStoryObserver = new GetStoryObserver();
+        }
+        return getStoryObserver;
+    }
+
+    private class GetStoryObserver extends BaseGetItemsObserver {
         @Override
         protected String getItemsTag() {
             return "story";

@@ -1,15 +1,14 @@
 package edu.byu.cs.tweeter.server.service;
 
-import edu.byu.cs.tweeter.model.net.request.FeedRequest;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
-import edu.byu.cs.tweeter.model.net.request.StoryRequest;
-import edu.byu.cs.tweeter.model.net.response.FeedResponse;
-import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
-import edu.byu.cs.tweeter.model.net.response.StoryResponse;
+import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
+import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
+import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.server.dao.StatusDAO;
 
 public class StatusService {
-    public FeedResponse getFeed(FeedRequest request) {
+    public StatusesResponse getFeed(StatusesRequest request) {
 //        if(request.getLastStatus() == null) {
 //            throw new RuntimeException("[BadRequest] Request needs to have a status");
 //        } else if(request.getLimit() <= 0) {
@@ -21,7 +20,7 @@ public class StatusService {
         return getStatusDAO().getFeed(request);
     }
 
-    public StoryResponse getStory(StoryRequest request) {
+    public StatusesResponse getStory(StatusesRequest request) {
 //        if(request.getLastStatus() == null) {
 //            throw new RuntimeException("[BadRequest] Request needs to have a status");
 //        } else if(request.getLimit() <= 0) {
@@ -37,7 +36,7 @@ public class StatusService {
         return new StatusDAO();
     }
 
-    public PostStatusResponse postStatus(PostStatusRequest request) {
+    public SimpleResponse postStatus(PostStatusRequest request) {
         if (request.getStatus() == null) {
             throw new RuntimeException("[BadRequest] Request needs to have a status");
         }

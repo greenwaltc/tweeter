@@ -9,8 +9,8 @@ import java.util.List;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
-import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
+import edu.byu.cs.tweeter.model.net.request.UsersRequest;
+import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
@@ -33,11 +33,11 @@ public class GetFollowersTask extends PagedUserTask {
             String targetUserAlias = getTargetUser() == null ? null : getTargetUser().getAlias();
             String lastFollowerAlias = getLastItem() == null ? null : getLastItem().getAlias();
 
-            FollowersRequest request = new FollowersRequest(getAuthToken(), targetUserAlias, getLimit(), lastFollowerAlias);
-            FollowersResponse response = getServerFacade().getFollowers(request, URL_PATH);
+            UsersRequest request = new UsersRequest(getAuthToken(), targetUserAlias, getLimit(), lastFollowerAlias);
+            UsersResponse response = getServerFacade().getFollowers(request, URL_PATH);
 
             if(response.isSuccess()) {
-                setItems(response.getFollowers());
+                setItems(response.getItems());
                 setHasMorePages(response.getHasMorePages());
                 sendSuccessMessage();
             }

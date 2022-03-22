@@ -2,24 +2,28 @@ package edu.byu.cs.tweeter.server.service;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.FollowRequest;
-import edu.byu.cs.tweeter.model.net.request.GetUserRequest;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
-import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
-import edu.byu.cs.tweeter.model.net.response.FollowResponse;
+import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
+import edu.byu.cs.tweeter.model.net.response.AuthenticateResponse;
 import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
-import edu.byu.cs.tweeter.model.net.response.LoginResponse;
-import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
-import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
-import edu.byu.cs.tweeter.model.net.response.UnfollowResponse;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
+import edu.byu.cs.tweeter.server.dao.DAOFactory;
+import edu.byu.cs.tweeter.server.dao.DynamoUserDAO;
 import edu.byu.cs.tweeter.server.dao.UserDAO;
 import edu.byu.cs.tweeter.util.FakeData;
 
 public class UserService {
 
-    public LoginResponse login(LoginRequest request) {
+    private UserDAO userDAO;
+
+    public UserService(DAOFactory daoFactory) {
+        userDAO = daoFactory.getUserDAO();
+
+    }
+
+    public AuthenticateResponse login(LoginRequest request) {
         if(request.getUsername() == null){
             throw new RuntimeException("[BadRequest] Missing a username");
         } else if(request.getPassword() == null) {
@@ -29,7 +33,7 @@ public class UserService {
         // TODO: Generates dummy data. Replace with a real implementation.
         User user = getDummyUser();
         AuthToken authToken = getDummyAuthToken();
-        return new LoginResponse(user, authToken);
+        return new AuthenticateResponse(user, authToken, true);
     }
 
     /**
@@ -62,34 +66,32 @@ public class UserService {
         return new FakeData();
     }
 
-    UserDAO getUserDAO() { return new UserDAO(); }
-
-    public FollowResponse follow(FollowRequest request) {
+    public SimpleResponse follow(SimpleUserRequest request) {
         if (request.getTargetUserAlias() == null) {
             throw new RuntimeException("[BadRequest] Missing a target user alias");
         }
-         return getUserDAO().follow(request);
+         return userDAO.follow(request);
     }
 
-    public UnfollowResponse unfollow(UnfollowRequest request) {
+    public SimpleResponse unfollow(SimpleUserRequest request) {
         if (request.getTargetUserAlias() == null) {
             throw new RuntimeException("[BadRequest] Missing a target user alias");
         }
-        return getUserDAO().unfollow(request);
+        return userDAO.unfollow(request);
     }
 
-    public GetUserResponse getUser(GetUserRequest request) {
+    public GetUserResponse getUser(SimpleUserRequest request) {
         if (request.getTargetUserAlias() == null) {
             throw new RuntimeException("[BadRequest] Missing a target user alias");
         }
-        return getUserDAO().getUser(request);
+        return userDAO.getUser(request);
     }
 
-    public LogoutResponse logout(LogoutRequest request) {
-        return getUserDAO().logout(request);
+    public SimpleResponse logout(LogoutRequest request) {
+        return userDAO.logout(request);
     }
 
-    public RegisterResponse register(RegisterRequest request) {
+    public AuthenticateResponse register(RegisterRequest request) {
         if(request.getUsername() == null){
             throw new RuntimeException("[BadRequest] Missing a username");
         } else if(request.getPassword() == null) {
@@ -102,9 +104,6 @@ public class UserService {
             throw new RuntimeException("[BadRequest] Missing an image");
         }
 
-        // TODO: Generates dummy data. Replace with a real implementation.
-        User user = getDummyUser();
-        AuthToken authToken = getDummyAuthToken();
-        return new RegisterResponse(user, authToken);
+        return userDAO.register(request);
     }
 }

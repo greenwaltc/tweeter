@@ -5,10 +5,8 @@ import android.util.Log;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
-import edu.byu.cs.tweeter.model.net.response.LoginResponse;
-import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
+import edu.byu.cs.tweeter.model.net.response.AuthenticateResponse;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
@@ -46,7 +44,7 @@ public class RegisterTask extends AuthenticateTask {
     protected void runTask() {
         try {
             RegisterRequest request = new RegisterRequest(firstName, lastName, username, password, image);
-            RegisterResponse response = getServerFacade().register(request, URL_PATH);
+            AuthenticateResponse response = getServerFacade().register(request, URL_PATH);
 
             if(response.isSuccess()) {
                 setAuthenticatedUser(response.getUser());

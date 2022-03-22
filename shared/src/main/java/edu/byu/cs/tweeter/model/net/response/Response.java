@@ -5,10 +5,12 @@ import java.io.Serializable;
 /**
  * A base class for server responses.
  */
-class Response implements Serializable {
+abstract class Response implements Serializable {
 
-    private final boolean success;
-    private final String message;
+    private boolean success;
+    private String message;
+
+    protected Response(){}
 
     /**
      * Creates an instance with a null message.

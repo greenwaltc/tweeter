@@ -44,13 +44,17 @@ public abstract class BackgroundTask implements Runnable {
         return new FakeData();
     }
 
+    public Bundle getBundle() {
+        return new Bundle();
+    }
+
     /**
      * Called by a Task's runTask method when it is successful.
      *
      * This method is public to make it accessible to test cases
      */
     public void sendSuccessMessage() {
-        Bundle msgBundle = new Bundle();
+        Bundle msgBundle = getBundle();
         msgBundle.putBoolean(SUCCESS_KEY, true);
         loadSuccessBundle(msgBundle);
         sendMessage(msgBundle);

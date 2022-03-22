@@ -5,15 +5,12 @@ import java.util.List;
 import java.util.Random;
 
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.FollowersRequest;
-import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
-import edu.byu.cs.tweeter.model.net.request.GetFollowersCountRequest;
-import edu.byu.cs.tweeter.model.net.request.GetFollowingCountRequest;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
-import edu.byu.cs.tweeter.model.net.response.FollowersResponse;
-import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
-import edu.byu.cs.tweeter.model.net.response.GetFollowersCountResponse;
-import edu.byu.cs.tweeter.model.net.response.GetFollowingCountResponse;
+import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
+import edu.byu.cs.tweeter.model.net.request.UsersRequest;
+import edu.byu.cs.tweeter.model.net.response.CountResponse;
+import edu.byu.cs.tweeter.model.net.response.UsersResponse;
+import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.util.FakeData;
 
@@ -45,10 +42,10 @@ public class FollowDAO {
      *                other information required to satisfy the request.
      * @return the followees.
      */
-    public FollowingResponse getFollowees(FollowingRequest request) {
+    public UsersResponse getFollowees(UsersRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;
-        assert request.getFollowerAlias() != null;
+        assert request.getUserAlias() != null;
 
         List<User> allFollowees = getDummyUsers();
         List<User> responseFollowees = new ArrayList<>(request.getLimit());
@@ -57,7 +54,7 @@ public class FollowDAO {
 
         if(request.getLimit() > 0) {
             if (allFollowees != null) {
-                int followeesIndex = getFolloweesStartingIndex(request.getLastFolloweeAlias(), allFollowees);
+                int followeesIndex = getFolloweesStartingIndex(request.getUserAlias(), allFollowees);
 
                 for(int limitCounter = 0; followeesIndex < allFollowees.size() && limitCounter < request.getLimit(); followeesIndex++, limitCounter++) {
                     responseFollowees.add(allFollowees.get(followeesIndex));
@@ -67,7 +64,7 @@ public class FollowDAO {
             }
         }
 
-        return new FollowingResponse(responseFollowees, hasMorePages);
+        return new UsersResponse(responseFollowees, hasMorePages);
     }
 
     /**
@@ -120,10 +117,10 @@ public class FollowDAO {
         return new FakeData();
     }
 
-    public FollowersResponse getFollowers(FollowersRequest request) {
+    public UsersResponse getFollowers(UsersRequest request) {
         // TODO: Generates dummy data. Replace with a real implementation.
         assert request.getLimit() > 0;
-        assert request.getFolloweeAlias() != null;
+        assert request.getUserAlias() != null;
 
         List<User> allFollowers = getDummyUsers();
         List<User> responseFollowers = new ArrayList<>(request.getLimit());
@@ -132,7 +129,7 @@ public class FollowDAO {
 
         if(request.getLimit() > 0) {
             if (allFollowers != null) {
-                int followersIndex = getFollowersStartingIndex(request.getLastFollowerAlias(), allFollowers);
+                int followersIndex = getFollowersStartingIndex(request.getUserAlias(), allFollowers);
 
                 for(int limitCounter = 0; followersIndex < allFollowers.size() && limitCounter < request.getLimit(); followersIndex++, limitCounter++) {
                     responseFollowers.add(allFollowers.get(followersIndex));
@@ -142,7 +139,7 @@ public class FollowDAO {
             }
         }
 
-        return new FollowersResponse(responseFollowers, hasMorePages);
+        return new UsersResponse(responseFollowers, hasMorePages);
     }
 
     private int getFollowersStartingIndex(String lastFollowerAlias, List<User> allFollowers) {
@@ -164,18 +161,18 @@ public class FollowDAO {
         return followersIndex;
     }
 
-    public GetFollowersCountResponse getFollowersCount(GetFollowersCountRequest request) {
+    public CountResponse getFollowersCount(SimpleUserRequest request) {
         //todo: uses dummy data, update to access database
         assert request.getTargetUserAlias() != null;
 
-        return new GetFollowersCountResponse(true, 15);
+        return new CountResponse(true, 15);
     }
 
-    public GetFollowingCountResponse getFollowingCount(GetFollowingCountRequest request) {
+    public CountResponse getFollowingCount(SimpleUserRequest request) {
         //todo: uses dummy data, update to access database
         assert request.getTargetUserAlias() != null;
 
-        return new GetFollowingCountResponse(true, 25);
+        return new CountResponse(true, 25);
     }
 
     public IsFollowerResponse isFollower(IsFollowerRequest request) {

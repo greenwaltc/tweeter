@@ -8,10 +8,8 @@ import java.io.IOException;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
-import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
-import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 
 /**
  * Background task that posts a new status sent by a user.
@@ -38,7 +36,7 @@ public class PostStatusTask extends AuthenticatedTask {
             Status statusToPost = status == null ? null : status;
 
             PostStatusRequest request = new PostStatusRequest(getAuthToken(), statusToPost);
-            PostStatusResponse response = getServerFacade().postStatus(request, URL_PATH);
+            SimpleResponse response = getServerFacade().postStatus(request, URL_PATH);
 
             if (response.isSuccess()) {
                 sendSuccessMessage();

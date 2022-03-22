@@ -10,8 +10,8 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.StoryRequest;
-import edu.byu.cs.tweeter.model.net.response.StoryResponse;
+import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
+import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
@@ -33,11 +33,11 @@ public class GetStoryTask extends PagedStatusTask {
             String targetUserAlias = getTargetUser() == null ? null : getTargetUser().getAlias();
             Status lastStatus = getLastItem() == null ? null : getLastItem();
 
-            StoryRequest request = new StoryRequest(getAuthToken(), targetUserAlias, getLimit(), lastStatus);
-            StoryResponse response = getServerFacade().getStory(request, URL_PATH);
+            StatusesRequest request = new StatusesRequest(getAuthToken(), targetUserAlias, getLimit(), lastStatus);
+            StatusesResponse response = getServerFacade().getStory(request, URL_PATH);
 
             if(response.isSuccess()) {
-                setItems(response.getStatuses());
+                setItems(response.getItems());
                 setHasMorePages(response.getHasMorePages());
                 sendSuccessMessage();
             }
