@@ -13,13 +13,11 @@ import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.request.UsersRequest;
 import edu.byu.cs.tweeter.model.net.response.AuthenticateResponse;
 import edu.byu.cs.tweeter.model.net.response.CountResponse;
-import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
-import edu.byu.cs.tweeter.model.net.response.UsersResponse;
-import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
 import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
+import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 
 /**
  * Acts as a Facade to the Tweeter server. All network requests to the server should go through
