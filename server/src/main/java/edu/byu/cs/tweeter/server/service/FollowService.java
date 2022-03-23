@@ -17,14 +17,11 @@ import edu.byu.cs.tweeter.model.domain.DBUser;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.request.UsersRequest;
-import edu.byu.cs.tweeter.model.net.response.CountResponse;
 import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
 import edu.byu.cs.tweeter.server.dao.DynamoFollowsDAO;
-import edu.byu.cs.tweeter.server.dao.FollowsDAO;
-import edu.byu.cs.tweeter.util.Pair;
 
 /**
  * Contains the business logic for getting the users a user is following.

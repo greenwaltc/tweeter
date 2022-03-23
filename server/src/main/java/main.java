@@ -1,13 +1,7 @@
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
-import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
-import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.response.AuthenticateResponse;
-import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
-import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.server.dao.DynamoDAOFactory;
-import edu.byu.cs.tweeter.server.dao.DynamoUserDAO;
 import edu.byu.cs.tweeter.server.service.UserService;
 
 public class main {
