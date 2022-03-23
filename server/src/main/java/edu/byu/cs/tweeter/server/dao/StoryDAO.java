@@ -5,7 +5,7 @@ import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 
-public interface StatusDAO {
+public interface StoryDAO {
     StatusesResponse getFeed(StatusesRequest request);
     StatusesResponse getStory(StatusesRequest request);
     SimpleResponse postStatus(PostStatusRequest request);

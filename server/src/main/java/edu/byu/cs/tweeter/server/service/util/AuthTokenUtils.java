@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.server.dao.util;
+package edu.byu.cs.tweeter.server.service.util;
 
 import java.sql.Timestamp;
 import java.util.UUID;

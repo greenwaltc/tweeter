@@ -8,12 +8,10 @@ import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 
-public interface FollowDAO {
-    SimpleResponse follow(SimpleUserRequest request);
-    SimpleResponse unfollow(SimpleUserRequest request);
+public interface FollowsDAO {
+    void insert(String followerAlias, String followeeAlias);
     UsersResponse getFollowees(UsersRequest request);
     UsersResponse getFollowers(UsersRequest request);
-    CountResponse getFollowersCount(SimpleUserRequest request);
-    CountResponse getFollowingCount(SimpleUserRequest request);
-    IsFollowerResponse isFollower(IsFollowerRequest request);
+    void delete(String followerAlias, String followeeAlias);
+    boolean isFollower(String followerAlias, String followeeAlias);
 }

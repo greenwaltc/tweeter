@@ -19,22 +19,24 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
     
     private static final String TableName = "authtoken";
     private static final String TablePrimaryKey = "token_value",
-            TableDatetimeKey = "date_time";
+            TableDatetimeKey = "date_time",
+            TableAliasKey = "alias";
     
     @Override
-    public void insertAuthToken(AuthToken authToken) {
+    public void insert(AuthToken authToken, String alias) {
         Table authtokenTable = dynamoDB.getTable(TableName);
         try {
             PutItemOutcome outcome = authtokenTable
                     .putItem(new Item().withPrimaryKey(TablePrimaryKey, authToken.getToken())
-                            .withString(TableDatetimeKey, authToken.getDatetime()));
+                            .withString(TableDatetimeKey, authToken.getDatetime())
+                            .withString(TableAliasKey, alias));
         } catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to add authtoken to database");
         }
     }
 
     @Override
-    public AuthToken getAuthToken(String tokenValue) {
+    public AuthToken get(String tokenValue) {
         Table userTable = dynamoDB.getTable(TableName);
         GetItemSpec spec = new GetItemSpec()
                 .withPrimaryKey(TablePrimaryKey, tokenValue);
@@ -45,14 +47,15 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
                 return null;
             }
             return new AuthToken((String) getUserOutcome.get(TablePrimaryKey),
-                    (String) getUserOutcome.get(TableDatetimeKey));
+                    (String) getUserOutcome.get(TableDatetimeKey),
+                    (String) getUserOutcome.get(TableAliasKey));
         } catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to read from authtoken table");
         }
     }
 
     @Override
-    public void deleteAuthToken(AuthToken authToken) {
+    public void delete(AuthToken authToken) {
         Table table = dynamoDB.getTable(TableName);
 
         DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
@@ -66,7 +69,7 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
     }
 
     @Override
-    public void updateAuthToken(AuthToken authToken) {
+    public void update(AuthToken authToken) {
         Table table = dynamoDB.getTable(TableName);
 
         Timestamp currTime = new Timestamp(System.currentTimeMillis());

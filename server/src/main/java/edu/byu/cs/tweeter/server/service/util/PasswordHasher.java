@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.server.dao.util;
+package edu.byu.cs.tweeter.server.service.util;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;

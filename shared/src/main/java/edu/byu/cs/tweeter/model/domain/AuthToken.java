@@ -15,6 +15,8 @@ public class AuthToken implements Serializable {
      */
     public String datetime;
 
+    public String alias;
+
     public AuthToken() {
     }
 
@@ -27,6 +29,12 @@ public class AuthToken implements Serializable {
         this.datetime = datetime;
     }
 
+    public AuthToken(String token, String datetime, String alias) {
+        this.token = token;
+        this.datetime = datetime;
+        this.alias = alias;
+    }
+
     public String getToken() {
         return token;
     }
@@ -37,5 +45,17 @@ public class AuthToken implements Serializable {
 
     public String getDatetime() {
         return datetime;
+    }
+
+    public void setDatetime(String datetime) {
+        this.datetime = datetime;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 }

@@ -12,6 +12,6 @@ public class UnfollowHandler implements RequestHandler<SimpleUserRequest, Simple
     @Override
     public SimpleResponse handleRequest(SimpleUserRequest request, Context context) {
         FollowService service = new FollowService(new DynamoDAOFactory());
-        return service.unfollow(request);
+        return service.updateFollowingRelationship(request, false);
     }
 }

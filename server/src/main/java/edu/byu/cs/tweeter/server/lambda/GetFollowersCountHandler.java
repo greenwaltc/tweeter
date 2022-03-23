@@ -7,11 +7,12 @@ import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.response.CountResponse;
 import edu.byu.cs.tweeter.server.dao.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.FollowService;
+import edu.byu.cs.tweeter.server.service.UserService;
 
 public class GetFollowersCountHandler implements RequestHandler<SimpleUserRequest, CountResponse>  {
     @Override
     public CountResponse handleRequest(SimpleUserRequest request, Context context) {
-        FollowService service = new FollowService(new DynamoDAOFactory());
+        UserService service = new UserService(new DynamoDAOFactory());
         return service.getFollowersCount(request);
     }
 }

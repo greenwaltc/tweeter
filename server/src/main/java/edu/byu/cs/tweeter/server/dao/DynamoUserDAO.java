@@ -3,34 +3,16 @@ package edu.byu.cs.tweeter.server.dao;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Base64;
-
-import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.DBUser;
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.LoginRequest;
-import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
-import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
-import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
-import edu.byu.cs.tweeter.model.net.response.AuthenticateResponse;
-import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
-import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
-import edu.byu.cs.tweeter.server.dao.util.AuthTokenUtils;
-import edu.byu.cs.tweeter.server.dao.util.CreateBucket;
-import edu.byu.cs.tweeter.server.dao.util.PasswordHasher;
-import edu.byu.cs.tweeter.util.FakeData;
-import edu.byu.cs.tweeter.util.Pair;
 
 public class DynamoUserDAO extends DynamoDAO implements UserDAO {
-
-    private static final String Region = "us-west-2";
 
     private static final String TableName = "users";
     private static final String TablePrimaryKey = "alias",
@@ -38,160 +20,77 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
             TableLastNameKey = "last_name",
             TablePasswordKey = "password",
             TableSaltKey = "salt",
-            TableImageURLKey = "image_url";
-    private static final String ProfilePhotosBucketName = "cs340cgreenw5-tweeter-profile-photos";
-    
-    public DynamoUserDAO(DAOFactory daoFactory) {
-        super(daoFactory.getAuthTokenDAO());
+            TableImageURLKey = "image_url",
+            TableFollowersCountKey = "followers_count",
+            TableFollowingCountKey = "following_count";
+
+    Table table = dynamoDB.getTable(TableName);
+
+    @Override
+    public void updateFollowingCount(String alias, int newCount) {
+        updateCount(alias, newCount, TableFollowingCountKey);
     }
 
     @Override
-    public AuthenticateResponse register(RegisterRequest request) {
-
-        // Verify that the provided alias is not already taken
-        Item getUserOutcome = getUserByAlias(request.getUsername());
-        if (getUserOutcome != null) {
-            return new AuthenticateResponse(false, "Username already taken");
-        }
-
-        // Add image to s3 and get the URL of the profile picture object
-        String profilePhotoURL = addImageToS3(request.getUsername(), request.getImage());
-
-        // Insert new user into the database
-        insertNewUser(request, profilePhotoURL);
-
-        return createSuccessAuthenticateResponse(request.getFirstName(), request.getLastName(),
-                request.getUsername(), profilePhotoURL);
+    public void updateFollowersCount(String alias, int newCount) {
+        updateCount(alias, newCount, TableFollowersCountKey);
     }
 
-    @Override
-    public AuthenticateResponse login(LoginRequest request) {
-        // Verify user exists in database
-        Item getUserOutcome = getUserByAlias(request.getUsername());
-        if (getUserOutcome == null) {
-            System.out.println("getUserOutcome was null");
-            return new AuthenticateResponse(false, "Username or password incorrect"); // Generic message for information hiding
-        }
-
-        // Verify that the passwords are the same
-        String loginPassword = request.getPassword();
-        byte[] databaseHash = (byte[]) getUserOutcome.get(TablePasswordKey);
-        byte[] salt = (byte[]) getUserOutcome.get(TableSaltKey);
-
-        if (!PasswordHasher.verifyPassword(loginPassword, salt, databaseHash)) { // Unsuccessful login attempt
-            System.out.println("Passwords didn't match");
-            return new AuthenticateResponse(false, "Username or password incorrect");
-        }
-
-        return createSuccessAuthenticateResponse((String) getUserOutcome.get(TableFirstNameKey),
-                (String) getUserOutcome.get(TableLastNameKey),
-                (String) getUserOutcome.get(TablePrimaryKey),
-                (String) getUserOutcome.get(TableImageURLKey));
-    }
-
-    @Override
-    public GetUserResponse getUser(SimpleUserRequest request) {
-
-        // Verify authToken
-        verifyAuthToken(request.getAuthToken());
-
-        Item getUserOutcome = getUserByAlias(request.getTargetUserAlias());
-        if (getUserOutcome == null) {
-            return new GetUserResponse(false, "User with given alias not found");
-        }
-
-        return new GetUserResponse(true,
-                new User((String) getUserOutcome.get(TableFirstNameKey),
-                        (String) getUserOutcome.get(TableLastNameKey),
-                        (String) getUserOutcome.get(TablePrimaryKey),
-                        (String) getUserOutcome.get(TableImageURLKey)));
-    }
-
-    @Override
-    public SimpleResponse logout(LogoutRequest request) {
-        // Verify authToken
-        verifyAuthToken(request.getAuthToken());
-
-        return new SimpleResponse(true);
-    }
-
-    private String addImageToS3(String key, String contents) {
-        // Converting String to image byte array
-        byte[] imageBytes = Base64.getDecoder().decode(contents);
-        InputStream stream = new ByteArrayInputStream(imageBytes);
-        ObjectMetadata meta = new ObjectMetadata();
-        meta.setContentLength(imageBytes.length);
-        meta.setContentType("image/jpeg");
-
-        // Create the s3 bucket for user's profile photos if not already created, otherwise return
-        // the previously created bucket.
-        Bucket profilePicBucket = CreateBucket.createBucket(ProfilePhotosBucketName);
-
-        // Add the string profile photo to the bucket
-        // https://stackoverflow.com/questions/2499132/how-to-write-a-string-to-amazon-s3-bucket
-        AmazonS3 s3client = AmazonS3ClientBuilder
-                .standard()
-                .withRegion(Region)
-                .build();
-        s3client.putObject(ProfilePhotosBucketName, key, stream, meta);
-
-        // Get the URL of the profile picture object in the s3 bucket
-        return s3client.getUrl(ProfilePhotosBucketName, key).toString();
-    }
-
-    private void insertNewUser(RegisterRequest request, String profilePhotoURL) {
-        // Add the new user to the users table
-        String firstName = request.getFirstName(),
-                lastName = request.getLastName(),
-                alias = request.getUsername(),
-                plainTxtPassword = request.getPassword();
-
-        // Hash the password
-        Pair<byte[], byte[]> hashSaltPair = PasswordHasher.hashPassword(plainTxtPassword);
-        byte[] hash = hashSaltPair.getFirst();
-        byte[] salt = hashSaltPair.getSecond();
-
-        // Add new user to the users table
-        Table userTable = dynamoDB.getTable(TableName);
+    private void updateCount(String alias, int newCount, String key) {
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey(TablePrimaryKey, alias)
+                .withUpdateExpression("set " + key + " = :r")
+                .withValueMap(new ValueMap().withInt(":r", newCount))
+                .withReturnValues(ReturnValue.UPDATED_NEW);
 
         try {
-            PutItemOutcome outcome = userTable
-                    .putItem(new Item().withPrimaryKey(TablePrimaryKey, alias)
-                            .withString(TableFirstNameKey, firstName)
-                            .withString(TableLastNameKey, lastName)
-                            .withBinary(TablePasswordKey, hash)
+            UpdateItemOutcome outcome = table.updateItem(updateItemSpec);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to update user followers or following count");
+        }
+    }
+
+    @Override
+    public void insert(User user, byte[] hashWord, byte[] salt) {
+        try {
+            PutItemOutcome outcome = table
+                    .putItem(new Item().withPrimaryKey(TablePrimaryKey, user.getAlias())
+                            .withString(TableFirstNameKey, user.getFirstName())
+                            .withString(TableLastNameKey, user.getLastName())
+                            .withBinary(TablePasswordKey, hashWord)
                             .withBinary(TableSaltKey, salt)
-                            .withString(TableImageURLKey, profilePhotoURL));
+                            .withString(TableImageURLKey, user.getImageUrl())
+                            .withInt(TableFollowersCountKey, 0)
+                            .withInt(TableFollowingCountKey, 0));
         }
         catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to add new user to database");
         }
     }
 
-    private Item getUserByAlias(String alias) {
-        Table userTable = dynamoDB.getTable(TableName);
+    @Override
+    public DBUser get(String alias) {
         GetItemSpec spec = new GetItemSpec()
                 .withPrimaryKey(TablePrimaryKey, alias);
 
         try {
-            Item getUserOutcome = userTable.getItem(spec);
-            return getUserOutcome;
+            Item getUserOutcome = table.getItem(spec);
+
+            if (getUserOutcome == null) {
+                return null;
+            }
+
+            User user = new User((String) getUserOutcome.get(TableFirstNameKey),
+                    (String) getUserOutcome.get(TableLastNameKey),
+                    (String) getUserOutcome.get(TablePrimaryKey),
+                    (String) getUserOutcome.get(TableImageURLKey));
+            return new DBUser(user,
+                    (byte[]) getUserOutcome.get(TablePasswordKey),
+                    (byte[]) getUserOutcome.get(TableSaltKey),
+                    getUserOutcome.getInt(TableFollowersCountKey),
+                    getUserOutcome.getInt(TableFollowingCountKey));
         } catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to read from users table");
         }
-    }
-
-    private AuthenticateResponse createSuccessAuthenticateResponse(String firstName, String lastName, String username, String imageURL) {
-        // Success. Add new authToken to database
-        AuthToken authToken = AuthTokenUtils.generateAuthToken();
-        authTokenDAO.insertAuthToken(authToken);
-
-        // Return successful response
-        User user = new User(firstName, lastName, username, imageURL);
-        return new AuthenticateResponse(user, authToken, true);
-    }
-
-    FakeData getFakeData() {
-        return new FakeData();
     }
 }

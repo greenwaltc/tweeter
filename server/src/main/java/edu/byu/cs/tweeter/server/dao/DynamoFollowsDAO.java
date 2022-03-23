@@ -1,5 +1,17 @@
 package edu.byu.cs.tweeter.server.dao;
 
+import com.amazonaws.services.dynamodbv2.document.DeleteItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.GetItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
+import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.ReturnValue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,11 +29,13 @@ import edu.byu.cs.tweeter.util.FakeData;
 /**
  * A DAO for accessing 'following' data from the database.
  */
-public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
+public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
 
-    public DynamoFollowDAO(DAOFactory daoFactory) {
-        super(daoFactory.getAuthTokenDAO());
-    }
+    private static final String TableName = "follows";
+    private static final String TablePrimaryKey = "follower_handle",
+            TableSortKey = "followee_handle";
+
+    Table table = dynamoDB.getTable(TableName);
 
     /**
      * Gets the count of users from the database that the user specified is following. The
@@ -36,14 +50,49 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
         return getDummyUsers().size();
     }
 
-    @Override
-    public SimpleResponse follow(SimpleUserRequest request) {
+    public SimpleResponse unfollow(SimpleUserRequest request) {
         return null;
     }
 
     @Override
-    public SimpleResponse unfollow(SimpleUserRequest request) {
-        return null;
+    public void insert(String followerAlias, String followeeAlias) {
+        try {
+            PutItemOutcome outcome = table
+                    .putItem(new Item()
+                            .withPrimaryKey(
+                                    new PrimaryKey(TablePrimaryKey, followerAlias, TableSortKey, followeeAlias)));
+        }
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to add new follows relationship");
+        }
+    }
+
+    @Override
+    public void delete(String followerAlias, String followeeAlias) {
+        DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
+                .withPrimaryKey(
+                        new PrimaryKey(TablePrimaryKey, followerAlias, TableSortKey, followeeAlias));
+
+        try {
+            DeleteItemOutcome outcome = table.deleteItem(deleteItemSpec);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to delete follows relationship");
+        }
+    }
+
+    @Override
+    public boolean isFollower(String followerAlias, String followeeAlias) {
+        try {
+            Item item = table.getItem(new PrimaryKey(TablePrimaryKey, followerAlias, TableSortKey, followeeAlias));
+            if (item != null) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to read from follows table");
+        }
     }
 
     /**
@@ -173,20 +222,6 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
         }
 
         return followersIndex;
-    }
-
-    public CountResponse getFollowersCount(SimpleUserRequest request) {
-        //todo: uses dummy data, update to access database
-        assert request.getTargetUserAlias() != null;
-
-        return new CountResponse(true, 15);
-    }
-
-    public CountResponse getFollowingCount(SimpleUserRequest request) {
-        //todo: uses dummy data, update to access database
-        assert request.getTargetUserAlias() != null;
-
-        return new CountResponse(true, 25);
     }
 
     public IsFollowerResponse isFollower(IsFollowerRequest request) {

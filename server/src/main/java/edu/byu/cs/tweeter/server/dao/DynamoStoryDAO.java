@@ -10,11 +10,7 @@ import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.util.FakeData;
 
-public class DynamoStatusDAO extends DynamoDAO implements StatusDAO{
-
-    public DynamoStatusDAO(DAOFactory daoFactory) {
-        super(daoFactory.getAuthTokenDAO());
-    }
+public class DynamoStoryDAO extends DynamoDAO implements StoryDAO {
 
     @Override
     public SimpleResponse postStatus(PostStatusRequest request) {

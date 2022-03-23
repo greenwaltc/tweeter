@@ -12,6 +12,6 @@ public class FollowHandler implements RequestHandler<SimpleUserRequest, SimpleRe
     @Override
     public SimpleResponse handleRequest(SimpleUserRequest request, Context context) {
         FollowService service = new FollowService(new DynamoDAOFactory());
-        return service.follow(request);
+        return service.updateFollowingRelationship(request, true);
     }
 }

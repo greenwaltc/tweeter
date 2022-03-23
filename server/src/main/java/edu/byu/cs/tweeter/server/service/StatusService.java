@@ -5,15 +5,14 @@ import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
-import edu.byu.cs.tweeter.server.dao.DynamoStatusDAO;
-import edu.byu.cs.tweeter.server.dao.StatusDAO;
+import edu.byu.cs.tweeter.server.dao.StoryDAO;
 
 public class StatusService {
 
-    private StatusDAO statusDAO;
+    private StoryDAO statusDAO;
 
     public StatusService(DAOFactory daoFactory) {
-        statusDAO = daoFactory.getStatusDAO();
+        statusDAO = daoFactory.getStoryDAO();
     }
 
     public SimpleResponse postStatus(PostStatusRequest request) {
