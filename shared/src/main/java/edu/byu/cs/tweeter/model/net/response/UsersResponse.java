@@ -21,10 +21,10 @@ public class UsersResponse extends PagedResponse<User> {
     /**
      * Creates a response indicating that the corresponding request was successful.
      *
-     * @param followees the followees to be included in the result.
+     * @param users the users to be included in the result.
      * @param hasMorePages an indicator of whether more data is available for the request.
      */
-    public UsersResponse(List<User> followees, boolean hasMorePages) {
-        super(followees, true, hasMorePages);
+    public UsersResponse(List<User> users, boolean hasMorePages) {
+        super(users, true, hasMorePages);
     }
 }

@@ -87,11 +87,6 @@ public class FollowService extends Service{
             }
 
         } while (primaryKey != null);
-
-
-//        verifyUsersRequest(request);
-//
-//        return daoFactory.getFollowsDAO().getFollowees(request);
         return null;
     }
 

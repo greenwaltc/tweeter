@@ -2,13 +2,21 @@ package edu.byu.cs.tweeter.server.dao;
 
 import com.amazonaws.services.dynamodbv2.document.DeleteItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.QueryResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import edu.byu.cs.tweeter.model.domain.User;
@@ -30,23 +38,6 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
             TableSortKey = "followee_handle";
 
     Table table = dynamoDB.getTable(TableName);
-
-    /**
-     * Gets the count of users from the database that the user specified is following. The
-     * current implementation uses generated data and doesn't actually access a database.
-     *
-     * @param follower the User whose count of how many following is desired.
-     * @return said count.
-     */
-    public Integer getFolloweeCount(User follower) {
-        // TODO: uses the dummy data.  Replace with a real implementation.
-        assert follower != null;
-        return getDummyUsers().size();
-    }
-
-    public SimpleResponse unfollow(SimpleUserRequest request) {
-        return null;
-    }
 
     @Override
     public void insert(String followerAlias, String followeeAlias) {
@@ -100,29 +91,83 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
      * @return the followees.
      */
     public UsersResponse getFollowees(UsersRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
-        assert request.getLimit() > 0;
-        assert request.getUserAlias() != null;
 
-        List<User> allFollowees = getDummyUsers();
-        List<User> responseFollowees = new ArrayList<>(request.getLimit());
+        ArrayList<String> followeesAliases = new ArrayList<>();
 
-        boolean hasMorePages = false;
+        HashMap<String, Object> valueMap = new HashMap<String, Object>();
+        valueMap.put(":handle", request.getUserAlias());
 
-        if(request.getLimit() > 0) {
-            if (allFollowees != null) {
-                int followeesIndex = getFolloweesStartingIndex(request.getUserAlias(), allFollowees);
+        PrimaryKey primaryKey = null;
+        QuerySpec querySpec = new QuerySpec().withKeyConditionExpression("follower_handle = :handle")
+                .withValueMap(valueMap)
+                .withScanIndexForward(true)
+                .withMaxResultSize(request.getLimit());
 
-                for(int limitCounter = 0; followeesIndex < allFollowees.size() && limitCounter < request.getLimit(); followeesIndex++, limitCounter++) {
-                    responseFollowees.add(allFollowees.get(followeesIndex));
-                }
-
-                hasMorePages = followeesIndex < allFollowees.size();
-            }
+        if (request.getLastItem() != null) {
+            primaryKey = new PrimaryKey(TablePrimaryKey, request.getUserAlias(), TableSortKey, request.getLastItem());
+            querySpec.withExclusiveStartKey(primaryKey);
         }
 
-        return new UsersResponse(responseFollowees, hasMorePages);
+        ItemCollection<QueryOutcome> items = null;
+        Iterator<Item> iterator = null;
+        Item item = null;
+
+        try {
+            items = table.query(querySpec);
+            iterator = items.iterator();
+
+            while (iterator.hasNext()) {
+                item = iterator.next();
+                followeesAliases.add(item.getString(TableSortKey));
+            }
+
+            QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
+            QueryResult queryResult = lastLowLevelResult.getQueryResult();
+            Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to query follows");
+        }
+
+        return null;
     }
+
+
+
+//    /**
+//     * Gets the users from the database that the user specified in the request is following. Uses
+//     * information in the request object to limit the number of followees returned and to return the
+//     * next set of followees after any that were returned in a previous request. The current
+//     * implementation returns generated data and doesn't actually access a database.
+//     *
+//     * @param request contains information about the user whose followees are to be returned and any
+//     *                other information required to satisfy the request.
+//     * @return the followees.
+//     */
+//    public UsersResponse getFollowees(UsersRequest request) {
+//        // TODO: Generates dummy data. Replace with a real implementation.
+//        assert request.getLimit() > 0;
+//        assert request.getUserAlias() != null;
+//
+//        List<User> allFollowees = getDummyUsers();
+//        List<User> responseFollowees = new ArrayList<>(request.getLimit());
+//
+//        boolean hasMorePages = false;
+//
+//        if(request.getLimit() > 0) {
+//            if (allFollowees != null) {
+//                int followeesIndex = getFolloweesStartingIndex(request.getUserAlias(), allFollowees);
+//
+//                for(int limitCounter = 0; followeesIndex < allFollowees.size() && limitCounter < request.getLimit(); followeesIndex++, limitCounter++) {
+//                    responseFollowees.add(allFollowees.get(followeesIndex));
+//                }
+//
+//                hasMorePages = followeesIndex < allFollowees.size();
+//            }
+//        }
+//
+//        return new UsersResponse(responseFollowees, hasMorePages);
+//    }
 
     /**
      * Determines the index for the first followee in the specified 'allFollowees' list that should
