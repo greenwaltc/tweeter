@@ -93,15 +93,15 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
     public GetUserResponse getUser(SimpleUserRequest request) {
 
         // Verify authToken
-        AuthToken authToken = authTokenDAO.getAuthToken(request.getAuthToken().getToken()); //todo: make getAuthToken function
+        AuthToken authToken = authTokenDAO.getAuthToken(request.getAuthToken().getToken());
         if (authToken == null) {
             throw new RuntimeException("[BadRequest] Access denied");
         }
         else if (AuthTokenUtils.verifyAuthToken(authToken)) {
-            // Update authToken with new timestamp
+            authTokenDAO.updateAuthToken(authToken); // Update with new timestamp
         } else {
-            // Throw access denied exception
-            // Delete authToken from DB
+            authTokenDAO.deleteAuthToken(authToken);
+            throw new RuntimeException("[BadRequest] Access denied");
         }
 
         Item getUserOutcome = getUserByAlias(request.getTargetUserAlias());
