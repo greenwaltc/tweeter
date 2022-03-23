@@ -1,5 +1,3 @@
-import com.amazonaws.services.dynamodbv2.xspec.L;
-
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;

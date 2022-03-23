@@ -69,6 +69,7 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
         // Verify user exists in database
         Item getUserOutcome = getUserByAlias(request.getUsername());
         if (getUserOutcome == null) {
+            System.out.println("getUserOutcome was null");
             return new AuthenticateResponse(false, "Username or password incorrect"); // Generic message for information hiding
         }
 
@@ -78,6 +79,7 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
         byte[] salt = (byte[]) getUserOutcome.get(TableSaltKey);
 
         if (!PasswordHasher.verifyPassword(loginPassword, salt, databaseHash)) { // Unsuccessful login attempt
+            System.out.println("Passwords didn't match");
             return new AuthenticateResponse(false, "Username or password incorrect");
         }
 
@@ -109,7 +111,7 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
     public SimpleResponse logout(LogoutRequest request) {
         // Verify authToken
         verifyAuthToken(request.getAuthToken());
-        
+
         return new SimpleResponse(true);
     }
 
