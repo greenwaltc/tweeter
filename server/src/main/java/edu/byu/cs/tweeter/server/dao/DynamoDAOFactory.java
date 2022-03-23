@@ -15,4 +15,9 @@ public class DynamoDAOFactory implements DAOFactory{
     public FollowDAO getFollowDAO() {
         return new DynamoFollowDAO(this);
     }
+
+    @Override
+    public StatusDAO getStatusDAO() {
+        return new DynamoStatusDAO(this);
+    }
 }

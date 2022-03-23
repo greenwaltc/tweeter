@@ -13,10 +13,12 @@ public class main {
         LoginRequest request = new LoginRequest("@afatchimp", "1234");
         DynamoUserDAO userDAO = new DynamoUserDAO(new DynamoDAOFactory());
         AuthenticateResponse response = userDAO.login(request);
-        AuthToken authToken = response.getAuthToken();
-        SimpleUserRequest getUserRequest = new SimpleUserRequest(authToken, "test-alias");
-        GetUserResponse getUserResponse = userDAO.getUser(getUserRequest);
-        LogoutRequest logoutRequest = new LogoutRequest(authToken);
-        SimpleResponse logoutResponse = userDAO.logout(logoutRequest);
+
+
+//        AuthToken authToken = response.getAuthToken();
+//        SimpleUserRequest getUserRequest = new SimpleUserRequest(authToken, "test-alias");
+//        GetUserResponse getUserResponse = userDAO.getUser(getUserRequest);
+//        LogoutRequest logoutRequest = new LogoutRequest(authToken);
+//        SimpleResponse logoutResponse = userDAO.logout(logoutRequest);
     }
 }

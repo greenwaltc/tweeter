@@ -4,35 +4,16 @@ import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
+import edu.byu.cs.tweeter.server.dao.DAOFactory;
+import edu.byu.cs.tweeter.server.dao.DynamoStatusDAO;
 import edu.byu.cs.tweeter.server.dao.StatusDAO;
 
 public class StatusService {
-    public StatusesResponse getFeed(StatusesRequest request) {
-//        if(request.getLastStatus() == null) {
-//            throw new RuntimeException("[BadRequest] Request needs to have a status");
-//        } else if(request.getLimit() <= 0) {
-//            throw new RuntimeException("[BadRequest] Request needs to have a positive limit");
-//        }
-        if(request.getLimit() <= 0) {
-            throw new RuntimeException("[BadRequest] Request needs to have a positive limit");
-        }
-        return getStatusDAO().getFeed(request);
-    }
 
-    public StatusesResponse getStory(StatusesRequest request) {
-//        if(request.getLastStatus() == null) {
-//            throw new RuntimeException("[BadRequest] Request needs to have a status");
-//        } else if(request.getLimit() <= 0) {
-//            throw new RuntimeException("[BadRequest] Request needs to have a positive limit");
-//        }
-        if(request.getLimit() <= 0) {
-            throw new RuntimeException("[BadRequest] Request needs to have a positive limit");
-        }
-        return getStatusDAO().getStory(request);
-    }
+    private StatusDAO statusDAO;
 
-    StatusDAO getStatusDAO() {
-        return new StatusDAO();
+    public StatusService(DAOFactory daoFactory) {
+        statusDAO = daoFactory.getStatusDAO();
     }
 
     public SimpleResponse postStatus(PostStatusRequest request) {
@@ -46,6 +27,22 @@ public class StatusService {
             throw new RuntimeException(("[BadRequest] Request status needs to have a post"));
         }
 
-        return getStatusDAO().postStatus(request);
+        return statusDAO.postStatus(request);
+    }
+
+    public StatusesResponse getFeed(StatusesRequest request) {
+        checkRequestLimit(request);
+        return statusDAO.getFeed(request);
+    }
+
+    public StatusesResponse getStory(StatusesRequest request) {
+        checkRequestLimit(request);
+        return statusDAO.getStory(request);
+    }
+
+    private void checkRequestLimit(StatusesRequest request) {
+        if(request.getLimit() <= 0) {
+            throw new RuntimeException("[BadRequest] Request needs to have a positive limit");
+        }
     }
 }
