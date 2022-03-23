@@ -10,4 +10,9 @@ public class DynamoDAOFactory implements DAOFactory{
     public AuthTokenDAO getAuthTokenDAO() {
         return new DynamoAuthTokenDAO();
     }
+
+    @Override
+    public FollowDAO getFollowDAO() {
+        return new DynamoFollowDAO(this);
+    }
 }

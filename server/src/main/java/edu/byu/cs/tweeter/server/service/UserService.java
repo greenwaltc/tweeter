@@ -47,20 +47,6 @@ public class UserService {
         return userDAO.login(request);
     }
 
-    public SimpleResponse follow(SimpleUserRequest request) {
-        if (request.getTargetUserAlias() == null) {
-            throw new RuntimeException("[BadRequest] Missing a target user alias");
-        }
-         return userDAO.follow(request);
-    }
-
-    public SimpleResponse unfollow(SimpleUserRequest request) {
-        if (request.getTargetUserAlias() == null) {
-            throw new RuntimeException("[BadRequest] Missing a target user alias");
-        }
-        return userDAO.unfollow(request);
-    }
-
     public GetUserResponse getUser(SimpleUserRequest request) {
         if (request.getTargetUserAlias() == null) {
             throw new RuntimeException("[BadRequest] Missing a target user alias");
@@ -69,6 +55,9 @@ public class UserService {
     }
 
     public SimpleResponse logout(LogoutRequest request) {
+        if (request.getAuthToken() == null) {
+            throw new RuntimeException("[BadRequest] Missing authToken");
+        }
         return userDAO.logout(request);
     }
 }

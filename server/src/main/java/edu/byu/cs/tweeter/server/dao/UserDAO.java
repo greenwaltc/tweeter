@@ -9,8 +9,6 @@ import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 
 public interface UserDAO {
-    SimpleResponse follow(SimpleUserRequest request);
-    SimpleResponse unfollow(SimpleUserRequest request);
     GetUserResponse getUser(SimpleUserRequest request);
     SimpleResponse logout(LogoutRequest request);
     AuthenticateResponse register(RegisterRequest request);

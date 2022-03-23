@@ -41,10 +41,8 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
             TableImageURLKey = "image_url";
     private static final String ProfilePhotosBucketName = "cs340cgreenw5-tweeter-profile-photos";
     
-    private AuthTokenDAO authTokenDAO;
-    
     public DynamoUserDAO(DAOFactory daoFactory) {
-        this.authTokenDAO = daoFactory.getAuthTokenDAO();
+        super(daoFactory.getAuthTokenDAO());
     }
 
     @Override
@@ -93,16 +91,7 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
     public GetUserResponse getUser(SimpleUserRequest request) {
 
         // Verify authToken
-        AuthToken authToken = authTokenDAO.getAuthToken(request.getAuthToken().getToken());
-        if (authToken == null) {
-            throw new RuntimeException("[BadRequest] Access denied");
-        }
-        else if (AuthTokenUtils.verifyAuthToken(authToken)) {
-            authTokenDAO.updateAuthToken(authToken); // Update with new timestamp
-        } else {
-            authTokenDAO.deleteAuthToken(authToken);
-            throw new RuntimeException("[BadRequest] Access denied");
-        }
+        verifyAuthToken(request.getAuthToken());
 
         Item getUserOutcome = getUserByAlias(request.getTargetUserAlias());
         if (getUserOutcome == null) {
@@ -117,21 +106,10 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
     }
 
     @Override
-    public SimpleResponse follow(SimpleUserRequest request) {
-
-        // todo: Uses dummy data, replace with real implementation
-        return new SimpleResponse(true);
-    }
-
-    @Override
-    public SimpleResponse unfollow(SimpleUserRequest request) {
-
-        // todo: Uses dummy data, replace with real implementation
-        return new SimpleResponse(true);
-    }
-
-    @Override
     public SimpleResponse logout(LogoutRequest request) {
+        // Verify authToken
+        verifyAuthToken(request.getAuthToken());
+        
         return new SimpleResponse(true);
     }
 
