@@ -1,6 +1,7 @@
 package edu.byu.cs.tweeter.server.dao;
 
 import com.amazonaws.services.dynamodbv2.document.DeleteItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.Index;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
@@ -27,6 +28,7 @@ import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.util.FakeData;
+import edu.byu.cs.tweeter.util.Pair;
 
 /**
  * A DAO for accessing 'following' data from the database.
@@ -35,7 +37,8 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
 
     private static final String TableName = "follows";
     private static final String TablePrimaryKey = "follower_handle",
-            TableSortKey = "followee_handle";
+            TableSortKey = "followee_handle",
+            TableIndex = "followee_handle-follower_handle-index";
 
     Table table = dynamoDB.getTable(TableName);
 
@@ -90,14 +93,19 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
      *                other information required to satisfy the request.
      * @return the followees.
      */
-    public UsersResponse getFollowees(UsersRequest request) {
+    public Pair<List<String>, Boolean> getFollowees(UsersRequest request) {
 
         ArrayList<String> followeesAliases = new ArrayList<>();
+        boolean hasMorePages = true;
 
-        HashMap<String, Object> valueMap = new HashMap<String, Object>();
+        HashMap<String, Object> valueMap = new HashMap<>();
         valueMap.put(":handle", request.getUserAlias());
 
-        PrimaryKey primaryKey = null;
+        PrimaryKey primaryKey;
+        ItemCollection<QueryOutcome> items;
+        Iterator<Item> iterator;
+        Item item;
+
         QuerySpec querySpec = new QuerySpec().withKeyConditionExpression("follower_handle = :handle")
                 .withValueMap(valueMap)
                 .withScanIndexForward(true)
@@ -107,10 +115,6 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
             primaryKey = new PrimaryKey(TablePrimaryKey, request.getUserAlias(), TableSortKey, request.getLastItem());
             querySpec.withExclusiveStartKey(primaryKey);
         }
-
-        ItemCollection<QueryOutcome> items = null;
-        Iterator<Item> iterator = null;
-        Item item = null;
 
         try {
             items = table.query(querySpec);
@@ -124,15 +128,13 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
             QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
             QueryResult queryResult = lastLowLevelResult.getQueryResult();
             Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+            if (lastEvaluatedKey == null) hasMorePages = false;
         }
         catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to query follows");
         }
-
-        return null;
+        return new Pair<>(followeesAliases, hasMorePages);
     }
-
-
 
 //    /**
 //     * Gets the users from the database that the user specified in the request is following. Uses
@@ -219,29 +221,49 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
         return new FakeData();
     }
 
-    public UsersResponse getFollowers(UsersRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
-        assert request.getLimit() > 0;
-        assert request.getUserAlias() != null;
+    public Pair<List<String>, Boolean> getFollowers(UsersRequest request) {
 
-        List<User> allFollowers = getDummyUsers();
-        List<User> responseFollowers = new ArrayList<>(request.getLimit());
+        ArrayList<String> followersAliases = new ArrayList<>();
+        boolean hasMorePages = true;
 
-        boolean hasMorePages = false;
+        HashMap<String, Object> valueMap = new HashMap<>();
+        valueMap.put(":handle", request.getUserAlias());
 
-        if(request.getLimit() > 0) {
-            if (allFollowers != null) {
-                int followersIndex = getFollowersStartingIndex(request.getUserAlias(), allFollowers);
+        PrimaryKey primaryKey;
+        ItemCollection<QueryOutcome> items;
+        Iterator<Item> iterator;
+        Item item;
 
-                for(int limitCounter = 0; followersIndex < allFollowers.size() && limitCounter < request.getLimit(); followersIndex++, limitCounter++) {
-                    responseFollowers.add(allFollowers.get(followersIndex));
-                }
+        QuerySpec querySpec = new QuerySpec().withKeyConditionExpression("followee_handle = :handle")
+                .withValueMap(valueMap)
+                .withScanIndexForward(true)
+                .withMaxResultSize(request.getLimit());
 
-                hasMorePages = followersIndex < allFollowers.size();
-            }
+        if (request.getLastItem() != null) {
+            primaryKey = new PrimaryKey(TablePrimaryKey, request.getUserAlias(), TableSortKey, request.getLastItem());
+            querySpec.withExclusiveStartKey(primaryKey);
         }
 
-        return new UsersResponse(responseFollowers, hasMorePages);
+        Index follows_index = table.getIndex(TableIndex);
+
+        try {
+            items = follows_index.query(querySpec);
+            iterator = items.iterator();
+
+            while (iterator.hasNext()) {
+                item = iterator.next();
+                followersAliases.add(item.getString(TablePrimaryKey));
+            }
+
+            QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
+            QueryResult queryResult = lastLowLevelResult.getQueryResult();
+            Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+            if (lastEvaluatedKey == null) hasMorePages = false;
+        }
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to query follows");
+        }
+        return new Pair<>(followersAliases, hasMorePages);
     }
 
     private int getFollowersStartingIndex(String lastFollowerAlias, List<User> allFollowers) {

@@ -8,12 +8,15 @@ import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.DBUser;
+import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.request.UsersRequest;
@@ -22,6 +25,7 @@ import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
 import edu.byu.cs.tweeter.server.dao.DynamoFollowsDAO;
+import edu.byu.cs.tweeter.util.Pair;
 
 /**
  * Contains the business logic for getting the users a user is following.
@@ -42,52 +46,22 @@ public class FollowService extends Service{
      * @return the followees.
      */
     public UsersResponse getFollowees(UsersRequest request) {
-        verifyAuthToken(request.getAuthToken());
+        verifyUsersRequest(request);
+        List<User> followees = new ArrayList<>();
 
-        HashMap<String, Object> valueMap = new HashMap<String, Object>();
-        valueMap.put(":handle", "@FredFlintstone");
+        Pair<List<String>, Boolean> getFolloweesResult = daoFactory.getFollowsDAO().getFollowees(request);
 
-        PrimaryKey primaryKey = null;
-        QuerySpec querySpec = new QuerySpec().withKeyConditionExpression("follower_handle = :handle")
-                .withValueMap(valueMap)
-                .withScanIndexForward(true)
-                .withMaxResultSize(10);
+        List<String> followeesAliases = getFolloweesResult.getFirst();
+        Boolean hasMorePages = getFolloweesResult.getSecond();
 
-        do {
-            ItemCollection<QueryOutcome> items = null;
-            Iterator<Item> iterator = null;
-            Item item = null;
+        for (String followeeAlias : followeesAliases) {
+//            User user = daoFactory.getUserDAO().get(followeeAlias).getUser();
 
-            try {
-                System.out.println("Users @FredFlintstone follows");
-                items = table.query(querySpec);
-                iterator = items.iterator();
-                while (iterator.hasNext()) {
-                    item = iterator.next();
-                    System.out.println(item.getString("followee_handle"));
-                }
+            User user = new User("asdf", "asdf", followeeAlias, "asdf");
+            followees.add(user);
+        }
 
-                QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
-                QueryResult queryResult = lastLowLevelResult.getQueryResult();
-                Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
-                if (lastEvaluatedKey == null) break;
-
-                String key = lastEvaluatedKey.get("follower_handle").getS();
-                String sortKey = lastEvaluatedKey.get("followee_handle").getS();
-
-                primaryKey = new PrimaryKey()
-                        .addComponent("follower_handle", key)
-                        .addComponent("followee_handle", sortKey);
-
-                querySpec.withExclusiveStartKey(primaryKey);
-            }
-            catch (Exception e) {
-                System.err.println("Unable to query follows");
-                System.err.println(e.getMessage());
-            }
-
-        } while (primaryKey != null);
-        return null;
+        return new UsersResponse(followees, hasMorePages);
     }
 
     /**
@@ -101,8 +75,23 @@ public class FollowService extends Service{
      */
     public UsersResponse getFollowers(UsersRequest request) {
         verifyUsersRequest(request);
-        return daoFactory.getFollowsDAO().getFollowers(request);
+        List<User> followers = new ArrayList<>();
+
+        Pair<List<String>, Boolean> getFollowersResult = daoFactory.getFollowsDAO().getFollowers(request);
+
+        List<String> followersAliases = getFollowersResult.getFirst();
+        Boolean hasMorePages = getFollowersResult.getSecond();
+
+        for (String followerAlias : followersAliases) {
+//            User user = daoFactory.getUserDAO().get(followeeAlias).getUser();
+
+            User user = new User("asdf", "asdf", followerAlias, "asdf");
+            followers.add(user);
+        }
+
+        return new UsersResponse(followers, hasMorePages);
     }
+
 
     public IsFollowerResponse isFollower(IsFollowerRequest request) {
         if(request.getFollowerAlias() == null) {

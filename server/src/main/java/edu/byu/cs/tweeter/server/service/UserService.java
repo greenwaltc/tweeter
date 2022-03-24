@@ -54,7 +54,7 @@ public class UserService extends Service{
         daoFactory.getUserDAO().insert(newUser, hashSaltPair.getFirst(), hashSaltPair.getSecond());
 
         // Success. Add new authToken to database
-        AuthToken authToken = AuthTokenUtils.generateAuthToken();
+        AuthToken authToken = AuthTokenUtils.generateAuthToken(newUser.getAlias());
         daoFactory.getAuthTokenDAO().insert(authToken, newUser.getAlias());
 
         // Return successful response
@@ -84,7 +84,7 @@ public class UserService extends Service{
         }
 
         // Success. Add new authToken to database
-        AuthToken authToken = AuthTokenUtils.generateAuthToken();
+        AuthToken authToken = AuthTokenUtils.generateAuthToken(dbUser.getUser().getAlias());
         daoFactory.getAuthTokenDAO().insert(authToken, dbUser.getUser().getAlias());
 
         // Return successful response

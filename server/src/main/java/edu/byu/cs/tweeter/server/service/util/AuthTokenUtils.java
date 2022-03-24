@@ -15,6 +15,13 @@ public class AuthTokenUtils {
 
         return new AuthToken(tokenValue, datetime);
     }
+
+    public static AuthToken generateAuthToken(String alias) {
+        AuthToken authToken = generateAuthToken();
+        authToken.setAlias(alias);
+        return authToken;
+    }
+
     public static boolean verifyAuthToken(AuthToken authToken) {
         Timestamp checkTime = Timestamp.valueOf(authToken.getDatetime());
         checkTime.setTime(checkTime.getTime() + duration);
