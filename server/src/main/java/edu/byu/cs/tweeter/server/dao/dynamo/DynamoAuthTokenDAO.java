@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.server.dao;
+package edu.byu.cs.tweeter.server.dao.dynamo;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
@@ -14,19 +14,21 @@ import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import java.sql.Timestamp;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.server.dao.AuthTokenDAO;
 
-public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
+public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO {
     
     private static final String TableName = "authtoken";
     private static final String TablePrimaryKey = "token_value",
             TableDatetimeKey = "date_time",
             TableAliasKey = "alias";
+
+    private Table table = dynamoDB.getTable(TableName);
     
     @Override
     public void insert(AuthToken authToken, String alias) {
-        Table authtokenTable = dynamoDB.getTable(TableName);
         try {
-            PutItemOutcome outcome = authtokenTable
+            PutItemOutcome outcome = table
                     .putItem(new Item().withPrimaryKey(TablePrimaryKey, authToken.getToken())
                             .withString(TableDatetimeKey, authToken.getDatetime())
                             .withString(TableAliasKey, alias));
@@ -37,12 +39,10 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
 
     @Override
     public AuthToken get(String tokenValue) {
-        Table userTable = dynamoDB.getTable(TableName);
         GetItemSpec spec = new GetItemSpec()
                 .withPrimaryKey(TablePrimaryKey, tokenValue);
-
         try {
-            Item getUserOutcome = userTable.getItem(spec);
+            Item getUserOutcome = table.getItem(spec);
             if (getUserOutcome == null) {
                 return null;
             }
@@ -56,11 +56,8 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
 
     @Override
     public void delete(AuthToken authToken) {
-        Table table = dynamoDB.getTable(TableName);
-
         DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
                 .withPrimaryKey(new PrimaryKey(TablePrimaryKey, authToken.getToken()));
-
         try {
             table.deleteItem(deleteItemSpec);
         } catch (Exception e) {
@@ -70,8 +67,6 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO{
 
     @Override
     public void update(AuthToken authToken) {
-        Table table = dynamoDB.getTable(TableName);
-
         Timestamp currTime = new Timestamp(System.currentTimeMillis());
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey(TablePrimaryKey, authToken.getToken())

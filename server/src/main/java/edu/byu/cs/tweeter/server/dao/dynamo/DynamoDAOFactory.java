@@ -1,6 +1,13 @@
-package edu.byu.cs.tweeter.server.dao;
+package edu.byu.cs.tweeter.server.dao.dynamo;
 
-public class DynamoDAOFactory implements DAOFactory{
+import edu.byu.cs.tweeter.server.dao.AuthTokenDAO;
+import edu.byu.cs.tweeter.server.dao.BucketDAO;
+import edu.byu.cs.tweeter.server.dao.DAOFactory;
+import edu.byu.cs.tweeter.server.dao.FollowsDAO;
+import edu.byu.cs.tweeter.server.dao.StatusDAO;
+import edu.byu.cs.tweeter.server.dao.UserDAO;
+
+public class DynamoDAOFactory implements DAOFactory {
 
     private DynamoUserDAO dynamoUserDAO;
     private DynamoAuthTokenDAO dynamoAuthTokenDAO;
@@ -34,7 +41,7 @@ public class DynamoDAOFactory implements DAOFactory{
     }
 
     @Override
-    public StoryDAO getStoryDAO() {
+    public StatusDAO getStoryDAO() {
         if (dynamoStoryDAO == null) {
             dynamoStoryDAO = new DynamoStoryDAO();
         }
@@ -50,7 +57,7 @@ public class DynamoDAOFactory implements DAOFactory{
     }
 
     @Override
-    public FeedDAO getFeedDAO() {
+    public StatusDAO getFeedDAO() {
         if (dynamoFeedDAO == null) {
             dynamoFeedDAO = new DynamoFeedDAO();
         }

@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.server.dao;
+package edu.byu.cs.tweeter.server.dao.dynamo;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -9,9 +9,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Base64;
 
+import edu.byu.cs.tweeter.server.dao.BucketDAO;
 import edu.byu.cs.tweeter.server.dao.util.CreateBucket;
 
-public class S3DAO implements BucketDAO{
+public class S3DAO implements BucketDAO {
     private static final String ProfilePhotosBucketName = "cs340cgreenw5-tweeter-profile-photos";
     private static final String Region = "us-west-2";
 

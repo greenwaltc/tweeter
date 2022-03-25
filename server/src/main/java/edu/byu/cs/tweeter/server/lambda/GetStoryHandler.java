@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
-import edu.byu.cs.tweeter.server.dao.DynamoDAOFactory;
+import edu.byu.cs.tweeter.server.dao.dynamo.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.StatusService;
 
 public class GetStoryHandler implements RequestHandler<StatusesRequest, StatusesResponse> {

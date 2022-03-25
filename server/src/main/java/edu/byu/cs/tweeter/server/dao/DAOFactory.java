@@ -4,7 +4,7 @@ public interface DAOFactory {
     UserDAO getUserDAO();
     AuthTokenDAO getAuthTokenDAO();
     FollowsDAO getFollowsDAO();
-    StoryDAO getStoryDAO();
+    StatusDAO getStoryDAO();
     BucketDAO getBucketDAO();
-    FeedDAO getFeedDAO();
+    StatusDAO getFeedDAO();
 }

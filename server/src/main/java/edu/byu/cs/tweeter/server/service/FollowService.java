@@ -12,7 +12,7 @@ import edu.byu.cs.tweeter.model.net.response.IsFollowerResponse;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.UsersResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
-import edu.byu.cs.tweeter.server.dao.DynamoFollowsDAO;
+import edu.byu.cs.tweeter.server.dao.dynamo.DynamoFollowsDAO;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
@@ -33,14 +33,14 @@ public class FollowService extends Service{
      * @param request contains the data required to fulfill the request.
      * @return the followees.
      */
-    public UsersResponse getFollowees(UsersRequest request) {
+    public UsersResponse getFollowing(UsersRequest request) {
         verifyUsersRequest(request);
-        Pair<List<User>, Boolean> getFolloweesResult = daoFactory.getFollowsDAO().getFollowees(request);
+        Pair<List<User>, Boolean> getFollowingResult = daoFactory.getFollowsDAO().getFollowing(request);
 
-        List<User> followees = getFolloweesResult.getFirst();
-        Boolean hasMorePages = getFolloweesResult.getSecond();
+        List<User> following = getFollowingResult.getFirst();
+        Boolean hasMorePages = getFollowingResult.getSecond();
 
-        return new UsersResponse(followees, hasMorePages);
+        return new UsersResponse(following, hasMorePages);
     }
 
     /**

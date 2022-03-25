@@ -1,13 +1,12 @@
-package edu.byu.cs.tweeter.server.dao;
+package edu.byu.cs.tweeter.server.dao.dynamo;
 
-import com.amazonaws.services.dynamodbv2.document.DeleteItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Index;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.api.QueryApi;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -21,6 +20,8 @@ import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.UsersRequest;
+import edu.byu.cs.tweeter.server.dao.FollowsDAO;
+import edu.byu.cs.tweeter.server.dao.UserDAO;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
@@ -73,67 +74,63 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
         }
     }
 
-    /**
-     * Gets the users from the database that the user specified in the request is following. Uses
-     * information in the request object to limit the number of followees returned and to return the
-     * next set of followees after any that were returned in a previous request. The current
-     * implementation returns generated data and doesn't actually access a database.
-     *
-     * @param request contains information about the user whose followees are to be returned and any
-     *                other information required to satisfy the request.
-     * @return the followees.
-     */
-    public Pair<List<User>, Boolean> getFollowees(UsersRequest request) {
+//    private abstract class GetUsers<T extends QueryApi> {
+//
+//        protected Pair<List<User>, Boolean> getUsers(UsersRequest request) {
+//            ArrayList<User> users = new ArrayList<>();
+//            boolean hasMorePages = true;
+//
+//            HashMap<String, Object> valueMap = new HashMap<>();
+//            valueMap.put(":handle", request.getUserAlias());
+//
+//            PrimaryKey primaryKey;
+//            ItemCollection<QueryOutcome> items;
+//            Iterator<Item> iterator;
+//            Item item;
+//
+//            QuerySpec querySpec = new QuerySpec().withKeyConditionExpression(TableSortKey + " = :handle")
+//                    .withValueMap(valueMap)
+//                    .withScanIndexForward(true)
+//                    .withMaxResultSize(request.getLimit());
+//
+//            if (request.getLastItem() != null) {
+//                primaryKey = new PrimaryKey(TablePrimaryKey, request.getLastItem(), TableSortKey, request.getUserAlias());
+//                querySpec.withExclusiveStartKey(primaryKey);
+//            }
+//
+//            Index follows_index = table.getIndex(TableIndex);
+//
+//            try {
+//                items = follows_index.query(querySpec);
+//                iterator = items.iterator();
+//
+//                while (iterator.hasNext()) {
+//                    item = iterator.next();
+//
+//                    UserDAO userDao = new DynamoUserDAO();
+//                    User user = userDao.get(item.getString(TablePrimaryKey)).getUser();
+//
+//                    users.add(user);
+//                }
+//
+//                QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
+//                QueryResult queryResult = lastLowLevelResult.getQueryResult();
+//                Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+//                if (lastEvaluatedKey == null) hasMorePages = false;
+//            }
+//            catch (Exception e) {
+//                throw new RuntimeException("[ServerError] Unable to query follows");
+//            }
+//            return new Pair<>(users, hasMorePages);
+//        }
+//
+//        protected abstract
+//    }
 
-        ArrayList<User> followees = new ArrayList<>();
-        boolean hasMorePages = true;
-
-        HashMap<String, Object> valueMap = new HashMap<>();
-        valueMap.put(":handle", request.getUserAlias());
-
-        PrimaryKey primaryKey;
-        ItemCollection<QueryOutcome> items;
-        Iterator<Item> iterator;
-        Item item;
-
-        QuerySpec querySpec = new QuerySpec().withKeyConditionExpression(TablePrimaryKey + " = :handle")
-                .withValueMap(valueMap)
-                .withScanIndexForward(true)
-                .withMaxResultSize(request.getLimit());
-
-        if (request.getLastItem() != null) {
-            primaryKey = new PrimaryKey(TablePrimaryKey, request.getUserAlias(), TableSortKey, request.getLastItem());
-            querySpec.withExclusiveStartKey(primaryKey);
-        }
-
-        try {
-            items = table.query(querySpec);
-            iterator = items.iterator();
-
-            while (iterator.hasNext()) {
-                item = iterator.next();
-
-                UserDAO userDao = new DynamoUserDAO();
-                User user = userDao.get(item.getString(TableSortKey)).getUser();
-
-                followees.add(user);
-            }
-
-            QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
-            QueryResult queryResult = lastLowLevelResult.getQueryResult();
-            Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
-            if (lastEvaluatedKey == null) hasMorePages = false;
-        }
-        catch (Exception e) {
-            throw new RuntimeException("[ServerError] Unable to query follows");
-        }
-
-        return new Pair<>(followees, hasMorePages);
-    }
-
+    @Override
     public Pair<List<User>, Boolean> getFollowers(UsersRequest request) {
 
-        ArrayList<User> followers = new ArrayList<>();
+        ArrayList<User> users = new ArrayList<>();
         boolean hasMorePages = true;
 
         HashMap<String, Object> valueMap = new HashMap<>();
@@ -166,7 +163,7 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
                 UserDAO userDao = new DynamoUserDAO();
                 User user = userDao.get(item.getString(TablePrimaryKey)).getUser();
 
-                followers.add(user);
+                users.add(user);
             }
 
             QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
@@ -177,6 +174,65 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
         catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to query follows");
         }
-        return new Pair<>(followers, hasMorePages);
+        return new Pair<>(users, hasMorePages);
+    }
+
+    /**
+     * Gets the users from the database that the user specified in the request is following. Uses
+     * information in the request object to limit the number of followees returned and to return the
+     * next set of following after any that were returned in a previous request. The current
+     * implementation returns generated data and doesn't actually access a database.
+     *
+     * @param request contains information about the user whose followees are to be returned and any
+     *                other information required to satisfy the request.
+     * @return the following.
+     */
+    @Override
+    public Pair<List<User>, Boolean> getFollowing(UsersRequest request) {
+
+        ArrayList<User> users = new ArrayList<>();
+        boolean hasMorePages = true;
+
+        HashMap<String, Object> valueMap = new HashMap<>();
+        valueMap.put(":handle", request.getUserAlias());
+
+        PrimaryKey primaryKey;
+        ItemCollection<QueryOutcome> items;
+        Iterator<Item> iterator;
+        Item item;
+
+        QuerySpec querySpec = new QuerySpec().withKeyConditionExpression(TablePrimaryKey + " = :handle")
+                .withValueMap(valueMap)
+                .withScanIndexForward(true)
+                .withMaxResultSize(request.getLimit());
+
+        if (request.getLastItem() != null) {
+            primaryKey = new PrimaryKey(TablePrimaryKey, request.getUserAlias(), TableSortKey, request.getLastItem());
+            querySpec.withExclusiveStartKey(primaryKey);
+        }
+
+        try {
+            items = table.query(querySpec);
+            iterator = items.iterator();
+
+            while (iterator.hasNext()) {
+                item = iterator.next();
+
+                UserDAO userDao = new DynamoUserDAO();
+                User user = userDao.get(item.getString(TableSortKey)).getUser();
+
+                users.add(user);
+            }
+
+            QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
+            QueryResult queryResult = lastLowLevelResult.getQueryResult();
+            Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+            if (lastEvaluatedKey == null) hasMorePages = false;
+        }
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to query follows");
+        }
+
+        return new Pair<>(users, hasMorePages);
     }
 }
