@@ -1,99 +1,104 @@
 package edu.byu.cs.tweeter.server.dao;
 
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.ItemCollection;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
+import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
+import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.QueryResult;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.Status;
-import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
-import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
-import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
-import edu.byu.cs.tweeter.util.FakeData;
+import edu.byu.cs.tweeter.server.dao.util.JsonSerializer;
+import edu.byu.cs.tweeter.util.Pair;
 
 public class DynamoStoryDAO extends DynamoDAO implements StoryDAO {
 
-    @Override
-    public SimpleResponse postStatus(PostStatusRequest request) {
-        // todo: uses dummy data
-        return new SimpleResponse(true);
-    }
+    private static final String TableName = "story";
+    private static final String TablePrimaryKey = "senderalias",
+            TableSortKey = "timestamp",
+            TableStatusKey = "status";
+
+    Table table = dynamoDB.getTable(TableName);
 
     @Override
-    public StatusesResponse getFeed(StatusesRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
-        assert request.getLimit() > 0;
-//        assert request.getLastStatus() != null;
+    public void insert(Status status) {
 
-        List<Status> allStatuses = getDummyStatuses();
-        List<Status> responseStatuses = new ArrayList<>(request.getLimit());
+        String senderAlias = status.getUser().getAlias();
+        String timestamp = status.getDate();
 
-        boolean hasMorePages = false;
+        String json = JsonSerializer.serialize(status);
 
-        if(request.getLimit() > 0) {
-            if (allStatuses != null) {
-                int statusesIndex = getStatusesStartingIndex(request.getLastItem(), allStatuses);
-
-                for(int limitCounter = 0; statusesIndex < allStatuses.size() && limitCounter < request.getLimit(); statusesIndex++, limitCounter++) {
-                    responseStatuses.add(allStatuses.get(statusesIndex));
-                }
-
-                hasMorePages = statusesIndex < allStatuses.size();
-            }
+        try {
+            Item item = new Item()
+                    .withPrimaryKey(TablePrimaryKey, senderAlias, TableSortKey, timestamp)
+                    .withJSON(TableStatusKey, json);
+            table.putItem(item);
         }
-
-        return new StatusesResponse(responseStatuses, hasMorePages);
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to insert into story table");
+        }
     }
 
     @Override
-    public StatusesResponse getStory(StatusesRequest request) {
-        // TODO: Generates dummy data. Replace with a real implementation.
-        assert request.getLimit() > 0;
-//        assert request.getLastStatus() != null;
+    public Pair<List<Status>, Boolean> getStory(StatusesRequest request) {
 
-        List<Status> allStatuses = getDummyStatuses();
-        List<Status> responseStatuses = new ArrayList<>(request.getLimit());
+        String senderAlias = request.getUserAlias();
+        String lastItemTimestamp = null;
+        if (request.getLastItem() != null) {
+            lastItemTimestamp = request.getLastItem().getDate();
+        }
+        int limit = request.getLimit();
 
-        boolean hasMorePages = false;
+        ArrayList<Status> story = new ArrayList<>();
+        boolean hasMorePages = true;
 
-        if(request.getLimit() > 0) {
-            if (allStatuses != null) {
-                int statusesIndex = getStatusesStartingIndex(request.getLastItem(), allStatuses);
+        HashMap<String, Object> valueMap = new HashMap<>();
+        valueMap.put(":handle", senderAlias);
 
-                for(int limitCounter = 0; statusesIndex < allStatuses.size() && limitCounter < request.getLimit(); statusesIndex++, limitCounter++) {
-                    responseStatuses.add(allStatuses.get(statusesIndex));
-                }
+        PrimaryKey primaryKey;
+        ItemCollection<QueryOutcome> items;
+        Iterator<Item> iterator;
+        Item item;
 
-                hasMorePages = statusesIndex < allStatuses.size();
-            }
+        QuerySpec querySpec = new QuerySpec().withKeyConditionExpression(TablePrimaryKey + " = :handle")
+                .withValueMap(valueMap)
+                .withScanIndexForward(false)
+                .withMaxResultSize(limit);
+
+        if (request.getLastItem() != null) {
+            primaryKey = new PrimaryKey(TablePrimaryKey, senderAlias, TableSortKey, lastItemTimestamp);
+            querySpec.withExclusiveStartKey(primaryKey);
         }
 
-        return new StatusesResponse(responseStatuses, hasMorePages);
-    }
+        try {
+            items = table.query(querySpec);
+            iterator = items.iterator();
 
-    private int getStatusesStartingIndex(Status lastStatus, List<Status> allStatuses) {
-        int statusesIndex = 0;
+            while (iterator.hasNext()) {
+                item = iterator.next();
 
-        if(lastStatus != null) {
-            // This is a paged request for something after the first page. Find the first item
-            // we should return
-            for (int i = 0; i < allStatuses.size(); i++) {
-                if(lastStatus.equals(allStatuses.get(i))) {
-                    // We found the index of the last item returned last time. Increment to get
-                    // to the first one we should return
-                    statusesIndex = i + 1;
-                    break;
-                }
+                String statusJson = item.getJSON(TableStatusKey);
+                Status status = JsonSerializer.deserialize(statusJson, Status.class);
+                story.add(status);
             }
+
+            QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
+            QueryResult queryResult = lastLowLevelResult.getQueryResult();
+            Map<String, AttributeValue> lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+            if (lastEvaluatedKey == null) hasMorePages = false;
         }
-
-        return statusesIndex;
-    }
-
-    List<Status> getDummyStatuses() {
-        return getFakeData().getFakeStatuses();
-    }
-
-    FakeData getFakeData() {
-        return new FakeData();
+        catch (Exception e) {
+            throw new RuntimeException("[ServerError] Unable to query story");
+        }
+        return new Pair<>(story, hasMorePages);
     }
 }

@@ -1,30 +1,46 @@
+import java.sql.Timestamp;
+
+import edu.byu.cs.tweeter.model.domain.Status;
+import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
-import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
-import edu.byu.cs.tweeter.model.net.request.UsersRequest;
+import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
+import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
+import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.AuthenticateResponse;
-import edu.byu.cs.tweeter.model.net.response.UsersResponse;
+import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
+import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
+import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.server.dao.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.FollowService;
+import edu.byu.cs.tweeter.server.service.StatusService;
 import edu.byu.cs.tweeter.server.service.UserService;
 
 public class main {
+
     public static void main(String[] args) {
-        FollowService followService = new FollowService(new DynamoDAOFactory());
-        UserService userService = new UserService(new DynamoDAOFactory());
+        DynamoDAOFactory dynamoDAOFactory = new DynamoDAOFactory();
+        FollowService followService = new FollowService(dynamoDAOFactory);
+        UserService userService = new UserService(dynamoDAOFactory);
+        StatusService statusService = new StatusService(dynamoDAOFactory);
+
+        LoginRequest request = new LoginRequest("@JoeyLittle", "password");
+        AuthenticateResponse loginResponse = userService.login(request);
+
+        SimpleUserRequest getUserRequest = new SimpleUserRequest(loginResponse.getAuthToken(), "@JoeyLittle");
+        GetUserResponse getUserResponse = userService.getUser(getUserRequest);
+        User user = getUserResponse.getUser();
+
+//        PostStatusRequest postStatusRequest = new PostStatusRequest(loginResponse.getAuthToken(),
+//                new Status("This is a test post",
+//                        user,
+//                        (new Timestamp(System.currentTimeMillis())).toString(),
+//                        null, null));
+//        SimpleResponse postStatusResponse = statusService.postStatus(postStatusRequest);
 
 
-        LoginRequest request = new LoginRequest("@FredFlintstone", "asdf");
-        AuthenticateResponse response = userService.login(request);
-
-        UsersRequest usersRequest1 = new UsersRequest(response.getAuthToken(), "@FredFlintstone", 10, null);
-        UsersResponse usersResponse1 = followService.getFollowees(usersRequest1);
-
-        UsersRequest usersRequest2 = new UsersRequest(response.getAuthToken(), "@FredFlintstone", 10, usersResponse1.getItems().get(usersResponse1.getItems().size() - 1).getAlias());
-        UsersResponse usersResponse2 = followService.getFollowees(usersRequest2);
-
-        UsersRequest usersRequest3 = new UsersRequest(response.getAuthToken(), "@FredFlintstone", 10, usersResponse2.getItems().get(usersResponse2.getItems().size() - 1).getAlias());
-        UsersResponse usersResponse3 = followService.getFollowees(usersRequest3);
-
+        StatusesRequest statusesRequest = new StatusesRequest(loginResponse.getAuthToken(), "@JoeyLittle", 10, null);
+        StatusesResponse storyResponse = statusService.getStory(statusesRequest);
+        Status storyStatus = storyResponse.getItems().get(0);
         System.out.println();
     }
 }

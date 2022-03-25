@@ -1,7 +1,7 @@
 package edu.byu.cs.tweeter.server.service;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.DBUser;
+import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
@@ -39,7 +39,7 @@ public class UserService extends Service{
         }
 
         // Verify that the provided alias is not already taken
-        DBUser dbUser = daoFactory.getUserDAO().get(request.getUsername());
+        UserDTO dbUser = daoFactory.getUserDAO().get(request.getUsername());
         if (dbUser != null) {
             return new AuthenticateResponse(false, "Username already taken");
         }
@@ -69,7 +69,7 @@ public class UserService extends Service{
         }
 
         // Verify user exists in database
-        DBUser dbUser = daoFactory.getUserDAO().get(request.getUsername());
+        UserDTO dbUser = daoFactory.getUserDAO().get(request.getUsername());
         if (dbUser == null) {
             return new AuthenticateResponse(false, UNAME_OR_PASS_INCORR); // Generic message for information hiding
         }
@@ -92,7 +92,7 @@ public class UserService extends Service{
     }
 
     public GetUserResponse getUser(SimpleUserRequest request) {
-        DBUser dbUser = getTargetUser(request);
+        UserDTO dbUser = getTargetUser(request);
         return new GetUserResponse(true, dbUser.getUser());
     }
 
@@ -105,18 +105,18 @@ public class UserService extends Service{
     }
 
     public CountResponse getFollowersCount(SimpleUserRequest request) {
-        DBUser dbUser = getTargetUser(request);
+        UserDTO dbUser = getTargetUser(request);
         return new CountResponse(true, dbUser.getFollowersCount());
     }
 
     public CountResponse getFollowingCount(SimpleUserRequest request) {
-        DBUser dbUser = getTargetUser(request);
+        UserDTO dbUser = getTargetUser(request);
         return new CountResponse(true, dbUser.getFollowingCount());
     }
 
-    private DBUser getTargetUser(SimpleUserRequest request) {
+    private UserDTO getTargetUser(SimpleUserRequest request) {
         verifySimpleUserRequest(request);
-        DBUser dbUser = daoFactory.getUserDAO().get(request.getTargetUserAlias());
+        UserDTO dbUser = daoFactory.getUserDAO().get(request.getTargetUserAlias());
         if (dbUser == null) {
             throw new RuntimeException("[NotFound] " + USER_ALIAS_NOT_FOUND);
         }

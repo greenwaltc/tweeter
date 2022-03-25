@@ -9,7 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 
-import edu.byu.cs.tweeter.model.domain.DBUser;
+import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class DynamoUserDAO extends DynamoDAO implements UserDAO {
@@ -69,7 +69,7 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
     }
 
     @Override
-    public DBUser get(String alias) {
+    public UserDTO get(String alias) {
         GetItemSpec spec = new GetItemSpec()
                 .withPrimaryKey(TablePrimaryKey, alias);
 
@@ -84,7 +84,7 @@ public class DynamoUserDAO extends DynamoDAO implements UserDAO {
                     (String) getUserOutcome.get(TableLastNameKey),
                     (String) getUserOutcome.get(TablePrimaryKey),
                     (String) getUserOutcome.get(TableImageURLKey));
-            return new DBUser(user,
+            return new UserDTO(user,
                     (byte[]) getUserOutcome.get(TablePasswordKey),
                     (byte[]) getUserOutcome.get(TableSaltKey),
                     getUserOutcome.getInt(TableFollowersCountKey),

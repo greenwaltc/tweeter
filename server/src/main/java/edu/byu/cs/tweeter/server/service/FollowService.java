@@ -1,21 +1,9 @@
 package edu.byu.cs.tweeter.server.service;
 
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.ItemCollection;
-import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
-import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.QueryResult;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.DBUser;
+import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
@@ -47,19 +35,10 @@ public class FollowService extends Service{
      */
     public UsersResponse getFollowees(UsersRequest request) {
         verifyUsersRequest(request);
-        List<User> followees = new ArrayList<>();
+        Pair<List<User>, Boolean> getFolloweesResult = daoFactory.getFollowsDAO().getFollowees(request);
 
-        Pair<List<String>, Boolean> getFolloweesResult = daoFactory.getFollowsDAO().getFollowees(request);
-
-        List<String> followeesAliases = getFolloweesResult.getFirst();
+        List<User> followees = getFolloweesResult.getFirst();
         Boolean hasMorePages = getFolloweesResult.getSecond();
-
-        for (String followeeAlias : followeesAliases) {
-//            User user = daoFactory.getUserDAO().get(followeeAlias).getUser();
-
-            User user = new User("asdf", "asdf", followeeAlias, "asdf");
-            followees.add(user);
-        }
 
         return new UsersResponse(followees, hasMorePages);
     }
@@ -75,19 +54,10 @@ public class FollowService extends Service{
      */
     public UsersResponse getFollowers(UsersRequest request) {
         verifyUsersRequest(request);
-        List<User> followers = new ArrayList<>();
+        Pair<List<User>, Boolean> getFollowersResult = daoFactory.getFollowsDAO().getFollowers(request);
 
-        Pair<List<String>, Boolean> getFollowersResult = daoFactory.getFollowsDAO().getFollowers(request);
-
-        List<String> followersAliases = getFollowersResult.getFirst();
+        List<User> followers = getFollowersResult.getFirst();
         Boolean hasMorePages = getFollowersResult.getSecond();
-
-        for (String followerAlias : followersAliases) {
-//            User user = daoFactory.getUserDAO().get(followeeAlias).getUser();
-
-            User user = new User("asdf", "asdf", followerAlias, "asdf");
-            followers.add(user);
-        }
 
         return new UsersResponse(followers, hasMorePages);
     }
@@ -106,8 +76,8 @@ public class FollowService extends Service{
         String followeeAlias = request.getFolloweeAlias();
 
         // Verify both users exist
-        DBUser follower = daoFactory.getUserDAO().get(followerAlias);
-        DBUser followee = daoFactory.getUserDAO().get(followeeAlias);
+        UserDTO follower = daoFactory.getUserDAO().get(followerAlias);
+        UserDTO followee = daoFactory.getUserDAO().get(followeeAlias);
 
         verifyUsersExist(follower, followee);
 
@@ -126,8 +96,8 @@ public class FollowService extends Service{
         String followeeAlias = request.getTargetUserAlias();
 
         // Verify both users exist
-        DBUser follower = daoFactory.getUserDAO().get(followerAlias);
-        DBUser followee = daoFactory.getUserDAO().get(followeeAlias);
+        UserDTO follower = daoFactory.getUserDAO().get(followerAlias);
+        UserDTO followee = daoFactory.getUserDAO().get(followeeAlias);
 
         verifyUsersExist(follower, followee);
 
@@ -149,7 +119,7 @@ public class FollowService extends Service{
         return new SimpleResponse(true);
     }
 
-    private void verifyUsersExist(DBUser follower, DBUser followee) {
+    private void verifyUsersExist(UserDTO follower, UserDTO followee) {
         if (follower == null) {
             throw new RuntimeException("[NotFound] Follower not found in database");
         }

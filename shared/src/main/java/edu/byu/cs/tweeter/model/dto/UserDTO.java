@@ -1,11 +1,17 @@
-package edu.byu.cs.tweeter.model.domain;
+package edu.byu.cs.tweeter.model.dto;
 
-public class DBUser {
+import edu.byu.cs.tweeter.model.domain.User;
+
+public class UserDTO {
     private User user;
     private byte[] hash, salt;
     private int followersCount, followingCount;
 
-    public DBUser(User user, byte[] hash, byte[] salt, int followersCount, int followingCount) {
+    public UserDTO() {
+        this.user = new User();
+    }
+
+    public UserDTO(User user, byte[] hash, byte[] salt, int followersCount, int followingCount) {
         this.user = user;
         this.hash = hash;
         this.salt = salt;
