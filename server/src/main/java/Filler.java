@@ -1,13 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
-import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.dto.UserDTO;
-import edu.byu.cs.tweeter.server.FactoryManager;
-import edu.byu.cs.tweeter.server.dao.DAOFactory;
-import edu.byu.cs.tweeter.server.dao.FollowsDAO;
-import edu.byu.cs.tweeter.server.dao.UserDAO;
-
 public class Filler {
 
 //    // How many follower users to add

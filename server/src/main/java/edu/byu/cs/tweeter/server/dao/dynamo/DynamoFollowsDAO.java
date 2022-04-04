@@ -1,16 +1,18 @@
 package edu.byu.cs.tweeter.server.dao.dynamo;
 
+import com.amazonaws.services.dynamodbv2.document.BatchWriteItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Index;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
 import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.api.QueryApi;
+import com.amazonaws.services.dynamodbv2.document.TableWriteItems;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.QueryResult;
+import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,13 +130,13 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
 //    }
 
     @Override
-    public Pair<List<User>, Boolean> getFollowers(UsersRequest request) {
+    public Pair<List<String>, Boolean> getFollowers(String userAlias, int limit, String lastFollowerAlias) {
 
-        ArrayList<User> users = new ArrayList<>();
+        ArrayList<String> userAliases = new ArrayList<>();
         boolean hasMorePages = true;
 
         HashMap<String, Object> valueMap = new HashMap<>();
-        valueMap.put(":handle", request.getUserAlias());
+        valueMap.put(":handle", userAlias);
 
         PrimaryKey primaryKey;
         ItemCollection<QueryOutcome> items;
@@ -144,10 +146,10 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
         QuerySpec querySpec = new QuerySpec().withKeyConditionExpression(TableSortKey + " = :handle")
                 .withValueMap(valueMap)
                 .withScanIndexForward(true)
-                .withMaxResultSize(request.getLimit());
+                .withMaxResultSize(limit);
 
-        if (request.getLastItem() != null) {
-            primaryKey = new PrimaryKey(TablePrimaryKey, request.getLastItem(), TableSortKey, request.getUserAlias());
+        if (lastFollowerAlias != null) {
+            primaryKey = new PrimaryKey(TablePrimaryKey, lastFollowerAlias, TableSortKey, userAlias);
             querySpec.withExclusiveStartKey(primaryKey);
         }
 
@@ -159,11 +161,7 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
 
             while (iterator.hasNext()) {
                 item = iterator.next();
-
-                UserDAO userDao = new DynamoUserDAO();
-                User user = userDao.get(item.getString(TablePrimaryKey)).getUser();
-
-                users.add(user);
+                userAliases.add(item.getString(TablePrimaryKey));
             }
 
             QueryOutcome lastLowLevelResult = items.getLastLowLevelResult();
@@ -174,7 +172,7 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
         catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to query follows");
         }
-        return new Pair<>(users, hasMorePages);
+        return new Pair<>(userAliases, hasMorePages);
     }
 
     /**
@@ -234,5 +232,44 @@ public class DynamoFollowsDAO extends DynamoDAO implements FollowsDAO {
         }
 
         return new Pair<>(users, hasMorePages);
+    }
+
+    @Override
+    public void batchInsert(List<String> batchUsers, String followeeAlias) {
+        // Constructor for TableWriteItems takes the name of the table, which I have stored in TableName
+        TableWriteItems items = new TableWriteItems(TableName);
+
+        // Add each status to the table
+        for (String followerAlias : batchUsers) {
+            Item item = new Item()
+                    .withPrimaryKey(TablePrimaryKey, followerAlias,
+                            TableSortKey, followeeAlias);
+            items.addItemToPut(item);
+
+            // 25 is the maximum number of items allowed in a single batch write.
+            // Attempting to write more than 25 items will result in an exception being thrown
+            if (items.getItemsToPut() != null && items.getItemsToPut().size() == 25) {
+                loopBatchWrite(items);
+                items = new TableWriteItems(TableName);
+            }
+        }
+
+        // Write any leftover items
+        if (items.getItemsToPut() != null && items.getItemsToPut().size() > 0) {
+            loopBatchWrite(items);
+        }
+    }
+
+    private void loopBatchWrite(TableWriteItems items) {
+
+        // The 'dynamoDB' object is of type DynamoDB and is declared statically in this example
+        BatchWriteItemOutcome outcome = dynamoDB.batchWriteItem(items);
+
+        // Check the outcome for items that didn't make it onto the table
+        // If any were not added to the table, try again to write the batch
+        while (outcome.getUnprocessedItems().size() > 0) {
+            Map<String, List<WriteRequest>> unprocessedItems = outcome.getUnprocessedItems();
+            outcome = dynamoDB.batchWriteItemUnprocessed(unprocessedItems);
+        }
     }
 }

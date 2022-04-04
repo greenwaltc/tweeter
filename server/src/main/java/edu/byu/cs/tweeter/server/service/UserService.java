@@ -1,8 +1,10 @@
 package edu.byu.cs.tweeter.server.service;
 
+import java.util.List;
+
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
@@ -121,5 +123,9 @@ public class UserService extends Service{
             throw new RuntimeException("[NotFound] " + USER_ALIAS_NOT_FOUND);
         }
         return dbUser;
+    }
+
+    public void batchAdd(List<UserDTO> batch) {
+        daoFactory.getUserDAO().batchInsert(batch);
     }
 }

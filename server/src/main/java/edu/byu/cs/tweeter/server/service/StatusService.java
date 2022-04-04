@@ -1,18 +1,25 @@
 package edu.byu.cs.tweeter.server.service;
 
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.services.sqs.model.SendMessageResult;
+
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.Status;
-import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.PostStatusDTO;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
-import edu.byu.cs.tweeter.model.net.request.UsersRequest;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
+import edu.byu.cs.tweeter.server.dao.util.JsonSerializer;
 import edu.byu.cs.tweeter.util.Pair;
 
 public class StatusService extends Service{
+
+    private final String postStatusQueueURL = "https://sqs.us-west-2.amazonaws.com/449579377599/PostStatusQueue";
 
     public StatusService(DAOFactory daoFactory) {
         super(daoFactory);
@@ -28,30 +35,30 @@ public class StatusService extends Service{
         if (request.getStatus().getPost() == null) {
             throw new RuntimeException(("[BadRequest] Request status needs to have a post"));
         }
-
         verifyAuthToken(request.getAuthToken());
+
         String senderAlias = request.getStatus().getUser().getAlias();
 
         // Insert post into the user's story
         daoFactory.getStoryDAO().insert(senderAlias, request.getStatus());
 
-        boolean hasMorePages = true;
-        String lastReceiverAlias = null;
-        do {
-            // Get the aliases of users following the sender
-            UsersRequest usersRequest = new UsersRequest(request.getAuthToken(), senderAlias, 25, lastReceiverAlias);
-            Pair<List<User>, Boolean> getFollowersOutcome = daoFactory.getFollowsDAO().getFollowers(usersRequest);
+        PostStatusDTO postStatusDTO = new PostStatusDTO(senderAlias, request.getStatus());
 
-            List<User> batchReceivers = getFollowersOutcome.getFirst();
-            hasMorePages = getFollowersOutcome.getSecond();
-            lastReceiverAlias = batchReceivers.get(batchReceivers.size() - 1).getAlias();
+        String messageBody = JsonSerializer.serialize(postStatusDTO);
 
-            // Add feed status to table for current batch of followers
-            daoFactory.getFeedDAO().insertBatch(batchReceivers, request.getStatus());
+        SendMessageRequest send_msg_request = new SendMessageRequest()
+            .withQueueUrl(postStatusQueueURL)
+            .withMessageBody(messageBody);
 
-        } while (hasMorePages == true);
+        AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
+        SendMessageResult send_msg_result = sqs.sendMessage(send_msg_request);
+        System.out.println("Message ID: " + send_msg_result.getMessageId()); // log to see if it work
 
         return new SimpleResponse(true);
+    }
+
+    public void batchPostFeedStatus(List<PostStatusDTO> batch) {
+        daoFactory.getFeedDAO().insertBatch(batch);
     }
 
     public StatusesResponse getFeed(StatusesRequest request) {

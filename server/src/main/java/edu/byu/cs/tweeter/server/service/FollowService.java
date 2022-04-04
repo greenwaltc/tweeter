@@ -1,10 +1,11 @@
 package edu.byu.cs.tweeter.server.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.request.UsersRequest;
@@ -54,10 +55,17 @@ public class FollowService extends Service{
      */
     public UsersResponse getFollowers(UsersRequest request) {
         verifyUsersRequest(request);
-        Pair<List<User>, Boolean> getFollowersResult = daoFactory.getFollowsDAO().getFollowers(request);
+        Pair<List<String>, Boolean> getFollowersResult = daoFactory.getFollowsDAO().getFollowers(request.getUserAlias(), request.getLimit(), request.getLastItem());
 
-        List<User> followers = getFollowersResult.getFirst();
+        List<String> followersAliases = getFollowersResult.getFirst();
         Boolean hasMorePages = getFollowersResult.getSecond();
+
+        List<User> followers = new ArrayList<>();
+
+        for (String followerAlias : followersAliases) {
+            User follower = daoFactory.getUserDAO().get(followerAlias).getUser();
+            followers.add(follower);
+        }
 
         return new UsersResponse(followers, hasMorePages);
     }
@@ -126,5 +134,9 @@ public class FollowService extends Service{
         if (followee == null) {
             throw new RuntimeException("[NotFound] Followee not found in database");
         }
+    }
+
+    public void batchFollow(List<String> batchUsers, String followeeAlias) {
+        daoFactory.getFollowsDAO().batchInsert(batchUsers, followeeAlias);
     }
 }

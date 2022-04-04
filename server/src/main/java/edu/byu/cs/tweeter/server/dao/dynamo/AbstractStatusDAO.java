@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.Status;
-import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.PostStatusDTO;
 import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.server.dao.StatusDAO;
 import edu.byu.cs.tweeter.server.dao.util.JsonSerializer;
@@ -103,21 +103,19 @@ public abstract class AbstractStatusDAO extends DynamoDAO implements StatusDAO {
         return new Pair<>(statuses, hasMorePages);
     }
 
-    public void insertBatch(List<User> users, Status status) {
+    public void insertBatch(List<PostStatusDTO> batch) {
         // Constructor for TableWriteItems takes the name of the table, which I have stored in TableName
         TableWriteItems items = new TableWriteItems(getTableName());
 
-        // Get the timestamp for the status
-        String timestamp = status.getDate();
+        // Add each status to the table
+        for (PostStatusDTO postStatusDTO : batch) {
+            String alias = postStatusDTO.getAlias();
+            String timestamp = postStatusDTO.getStatus().getDate();
+            String statusJson = JsonSerializer.serialize(postStatusDTO.getStatus());
 
-        // Deserialize status into json
-        String json = JsonSerializer.serialize(status);
-
-        // Add each user into the TableWriteItems object
-        for (User user : users) {
             Item item = new Item()
-                    .withPrimaryKey(getTablePrimaryKey(), user.getAlias(), TableSortKey, timestamp)
-                    .withJSON(TableStatusKey, json);
+                    .withPrimaryKey(getTablePrimaryKey(), alias, TableSortKey, timestamp)
+                    .withJSON(TableStatusKey, statusJson);
             items.addItemToPut(item);
 
             // 25 is the maximum number of items allowed in a single batch write.

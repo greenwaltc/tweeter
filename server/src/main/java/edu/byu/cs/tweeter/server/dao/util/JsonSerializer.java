@@ -2,6 +2,8 @@ package edu.byu.cs.tweeter.server.dao.util;
 
 import com.google.gson.Gson;
 
+import java.lang.reflect.Type;
+
 public class JsonSerializer {
 
     public static String serialize(Object requestInfo) {
@@ -9,6 +11,10 @@ public class JsonSerializer {
     }
 
     public static <T> T deserialize(String value, Class<T> returnType) {
+        return (new Gson()).fromJson(value, returnType);
+    }
+
+    public static <T> T deserialize(String value, Type returnType) {
         return (new Gson()).fromJson(value, returnType);
     }
 }
