@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UpdateFeedsDTO {
-    List<PostStatusDTO> batch;
+    List<StatusDTO> batch;
 
     public UpdateFeedsDTO(){
         batch = new ArrayList<>();
     }
 
-    public void add(PostStatusDTO ob) {
+    public void add(StatusDTO ob) {
         batch.add(ob);
     }
 
@@ -18,7 +18,7 @@ public class UpdateFeedsDTO {
         return batch.size();
     }
 
-    public PostStatusDTO get(int i) {
+    public StatusDTO get(int i) {
         return batch.get(i);
     }
 
@@ -26,7 +26,7 @@ public class UpdateFeedsDTO {
         batch = new ArrayList<>();
     }
 
-    public List<PostStatusDTO> getBatch() {
+    public List<StatusDTO> getBatch() {
         return batch;
     }
 }

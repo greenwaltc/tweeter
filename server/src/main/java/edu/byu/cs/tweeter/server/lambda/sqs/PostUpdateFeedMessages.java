@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.Status;
-import edu.byu.cs.tweeter.model.dto.PostStatusDTO;
+import edu.byu.cs.tweeter.model.dto.StatusDTO;
 import edu.byu.cs.tweeter.server.dao.FollowsDAO;
 import edu.byu.cs.tweeter.server.dao.dynamo.DynamoFollowsDAO;
-import edu.byu.cs.tweeter.server.dao.util.JsonSerializer;
+import edu.byu.cs.tweeter.util.JsonSerializer;
 import edu.byu.cs.tweeter.util.Pair;
 
 public class PostUpdateFeedMessages implements RequestHandler<SQSEvent, Void> {
@@ -30,7 +30,7 @@ public class PostUpdateFeedMessages implements RequestHandler<SQSEvent, Void> {
         for (SQSEvent.SQSMessage msg : event.getRecords()) {
 
             // Get the DTO object
-            PostStatusDTO postStatusDTO = JsonSerializer.deserialize(msg.getBody(), PostStatusDTO.class);
+            StatusDTO postStatusDTO = JsonSerializer.deserialize(msg.getBody(), StatusDTO.class);
 
             // Save sender and status
             String senderAlias = postStatusDTO.getAlias();
@@ -39,10 +39,9 @@ public class PostUpdateFeedMessages implements RequestHandler<SQSEvent, Void> {
             boolean hasMorePages = true;
             String lastReceiverAlias = null;
             FollowsDAO followsDAO = new DynamoFollowsDAO();
-            List<PostStatusDTO> batch = new ArrayList<>();
+            List<StatusDTO> batch = new ArrayList<>();
 
             do {
-
                 // Get the followers of the sender
                 Pair<List<String>, Boolean> getFollowersOutcome =
                         followsDAO.getFollowers(senderAlias, maxBatchSize, lastReceiverAlias);
@@ -60,7 +59,7 @@ public class PostUpdateFeedMessages implements RequestHandler<SQSEvent, Void> {
 
                 // Add all the receivers w/ status to batch
                 for (String receiverAlias : batchReceivers) {
-                    batch.add(new PostStatusDTO(receiverAlias, status));
+                    batch.add(new StatusDTO(receiverAlias, status));
                 }
 
                 // Send the batch to the UpdateFeeds Queue

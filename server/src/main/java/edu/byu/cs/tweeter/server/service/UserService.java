@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.AuthTokenDTO;
 import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
@@ -53,11 +54,14 @@ public class UserService extends Service{
         User newUser = new User(request.getFirstName(), request.getLastName(), request.getUsername(), profilePhotoURL);
         // Hash the password
         Pair<byte[], byte[]> hashSaltPair = PasswordHasher.hashPassword(request.getPassword());
-        daoFactory.getUserDAO().insert(newUser, hashSaltPair.getFirst(), hashSaltPair.getSecond());
+
+        UserDTO userDTO = new UserDTO(newUser, hashSaltPair.getFirst(), hashSaltPair.getSecond(), 0, 0);
+        daoFactory.getUserDAO().insert(userDTO);
 
         // Success. Add new authToken to database
         AuthToken authToken = AuthTokenUtils.generateAuthToken(newUser.getAlias());
-        daoFactory.getAuthTokenDAO().insert(authToken, newUser.getAlias());
+        AuthTokenDTO authTokenDTO = new AuthTokenDTO(authToken, newUser.getAlias());
+        daoFactory.getAuthTokenDAO().insert(authTokenDTO);
 
         // Return successful response
         return new AuthenticateResponse(newUser, authToken, true);
@@ -87,7 +91,8 @@ public class UserService extends Service{
 
         // Success. Add new authToken to database
         AuthToken authToken = AuthTokenUtils.generateAuthToken(dbUser.getUser().getAlias());
-        daoFactory.getAuthTokenDAO().insert(authToken, dbUser.getUser().getAlias());
+        AuthTokenDTO authTokenDTO = new AuthTokenDTO(authToken, dbUser.getUser().getAlias());
+        daoFactory.getAuthTokenDAO().insert(authTokenDTO);
 
         // Return successful response
         return new AuthenticateResponse(dbUser.getUser(), authToken, true);
@@ -123,9 +128,5 @@ public class UserService extends Service{
             throw new RuntimeException("[NotFound] " + USER_ALIAS_NOT_FOUND);
         }
         return dbUser;
-    }
-
-    public void batchAdd(List<UserDTO> batch) {
-        daoFactory.getUserDAO().batchInsert(batch);
     }
 }

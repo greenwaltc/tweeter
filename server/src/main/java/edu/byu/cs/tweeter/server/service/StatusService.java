@@ -8,13 +8,13 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.Status;
-import edu.byu.cs.tweeter.model.dto.PostStatusDTO;
+import edu.byu.cs.tweeter.model.dto.StatusDTO;
 import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
-import edu.byu.cs.tweeter.server.dao.util.JsonSerializer;
+import edu.byu.cs.tweeter.util.JsonSerializer;
 import edu.byu.cs.tweeter.util.Pair;
 
 public class StatusService extends Service{
@@ -35,14 +35,16 @@ public class StatusService extends Service{
         if (request.getStatus().getPost() == null) {
             throw new RuntimeException(("[BadRequest] Request status needs to have a post"));
         }
+
         verifyAuthToken(request.getAuthToken());
 
         String senderAlias = request.getStatus().getUser().getAlias();
 
         // Insert post into the user's story
-        daoFactory.getStoryDAO().insert(senderAlias, request.getStatus());
+        StatusDTO statusDTO = new StatusDTO(senderAlias, request.getStatus());
+        daoFactory.getStoryDAO().insert(statusDTO);
 
-        PostStatusDTO postStatusDTO = new PostStatusDTO(senderAlias, request.getStatus());
+        StatusDTO postStatusDTO = new StatusDTO(senderAlias, request.getStatus());
 
         String messageBody = JsonSerializer.serialize(postStatusDTO);
 
@@ -57,14 +59,11 @@ public class StatusService extends Service{
         return new SimpleResponse(true);
     }
 
-    public void batchPostFeedStatus(List<PostStatusDTO> batch) {
-        daoFactory.getFeedDAO().insertBatch(batch);
-    }
-
     public StatusesResponse getFeed(StatusesRequest request) {
         verifyStatusesRequest(request);
 
-        Pair<List<Status>, Boolean> getFeedResult = daoFactory.getFeedDAO().getStatuses(request);
+        Pair<List<Status>, Boolean> getFeedResult = daoFactory.getFeedDAO().
+                getStatuses(request.getUserAlias(), request.getLimit(), request.getLastItem().getDate());
         List<Status> feed = getFeedResult.getFirst();
         Boolean hasMorePages = getFeedResult.getSecond();
 
@@ -74,7 +73,8 @@ public class StatusService extends Service{
     public StatusesResponse getStory(StatusesRequest request) {
         verifyStatusesRequest(request);
 
-        Pair<List<Status>, Boolean> getStoryResult = daoFactory.getStoryDAO().getStatuses(request);
+        Pair<List<Status>, Boolean> getStoryResult = daoFactory.getStoryDAO()
+                .getStatuses(request.getUserAlias(), request.getLimit(), request.getLastItem().getDate());
         List<Status> story = getStoryResult.getFirst();
         Boolean hasMorePages = getStoryResult.getSecond();
 

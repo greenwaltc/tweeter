@@ -2,13 +2,13 @@ package edu.byu.cs.tweeter.model.dto;
 
 import edu.byu.cs.tweeter.model.domain.Status;
 
-public class PostStatusDTO {
+public class StatusDTO {
     private String alias;
     private Status status;
 
-    private PostStatusDTO(){}
+    private StatusDTO(){}
 
-    public PostStatusDTO(String alias, Status status) {
+    public StatusDTO(String alias, Status status) {
         this.alias = alias;
         this.status = status;
     }

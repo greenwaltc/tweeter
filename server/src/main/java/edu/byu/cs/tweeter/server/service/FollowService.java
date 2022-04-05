@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.FollowsDTO;
 import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
 import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
@@ -36,10 +37,20 @@ public class FollowService extends Service{
      */
     public UsersResponse getFollowing(UsersRequest request) {
         verifyUsersRequest(request);
-        Pair<List<User>, Boolean> getFollowingResult = daoFactory.getFollowsDAO().getFollowing(request);
+        Pair<List<String>, Boolean> getFollowingResult =
+                daoFactory.getFollowsDAO().getFollowing(request.getUserAlias(),
+                        request.getLimit(),
+                        request.getLastItem());
 
-        List<User> following = getFollowingResult.getFirst();
+        List<String> followingAliases = getFollowingResult.getFirst();
         Boolean hasMorePages = getFollowingResult.getSecond();
+
+        List<User> following = new ArrayList<>();
+
+        for (String followingAlias : followingAliases) {
+            User follower = daoFactory.getUserDAO().get(followingAlias).getUser();
+            following.add(follower);
+        }
 
         return new UsersResponse(following, hasMorePages);
     }
@@ -111,7 +122,8 @@ public class FollowService extends Service{
 
         if (follow) { // Follow
             // Insert the new following relationship to database
-            daoFactory.getFollowsDAO().insert(followerAlias, followeeAlias);
+            FollowsDTO followsDTO = new FollowsDTO(followerAlias, followeeAlias);
+            daoFactory.getFollowsDAO().insert(followsDTO);
 
             // Increment followers/following counts, respectively
             daoFactory.getUserDAO().updateFollowingCount(followerAlias, follower.getFollowingCount()+1);
@@ -134,9 +146,5 @@ public class FollowService extends Service{
         if (followee == null) {
             throw new RuntimeException("[NotFound] Followee not found in database");
         }
-    }
-
-    public void batchFollow(List<String> batchUsers, String followeeAlias) {
-        daoFactory.getFollowsDAO().batchInsert(batchUsers, followeeAlias);
     }
 }
