@@ -62,8 +62,10 @@ public class StatusService extends Service{
     public StatusesResponse getFeed(StatusesRequest request) {
         verifyStatusesRequest(request);
 
+        String lastItemValue = request.getLastItem() == null ? null : request.getLastItem().getDate();
+
         Pair<List<Status>, Boolean> getFeedResult = daoFactory.getFeedDAO().
-                getStatuses(request.getUserAlias(), request.getLimit(), request.getLastItem().getDate());
+                getStatuses(request.getUserAlias(), request.getLimit(), lastItemValue);
         List<Status> feed = getFeedResult.getFirst();
         Boolean hasMorePages = getFeedResult.getSecond();
 
@@ -73,8 +75,10 @@ public class StatusService extends Service{
     public StatusesResponse getStory(StatusesRequest request) {
         verifyStatusesRequest(request);
 
+        String lastItemValue = request.getLastItem() == null ? null : request.getLastItem().getDate();
+
         Pair<List<Status>, Boolean> getStoryResult = daoFactory.getStoryDAO()
-                .getStatuses(request.getUserAlias(), request.getLimit(), request.getLastItem().getDate());
+                .getStatuses(request.getUserAlias(), request.getLimit(), lastItemValue);
         List<Status> story = getStoryResult.getFirst();
         Boolean hasMorePages = getStoryResult.getSecond();
 
