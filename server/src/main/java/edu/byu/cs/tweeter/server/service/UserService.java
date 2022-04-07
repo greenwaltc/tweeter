@@ -59,12 +59,11 @@ public class UserService extends Service{
         daoFactory.getUserDAO().insert(userDTO);
 
         // Success. Add new authToken to database
-        AuthToken authToken = AuthTokenUtils.generateAuthToken(newUser.getAlias());
-        AuthTokenDTO authTokenDTO = new AuthTokenDTO(authToken, newUser.getAlias());
+        AuthTokenDTO authTokenDTO = AuthTokenUtils.generateAuthToken(newUser.getAlias());
         daoFactory.getAuthTokenDAO().insert(authTokenDTO);
 
         // Return successful response
-        return new AuthenticateResponse(newUser, authToken, true);
+        return new AuthenticateResponse(newUser, authTokenDTO.getAuthToken(), true);
     }
 
     public AuthenticateResponse login(LoginRequest request) {
@@ -90,12 +89,11 @@ public class UserService extends Service{
         }
 
         // Success. Add new authToken to database
-        AuthToken authToken = AuthTokenUtils.generateAuthToken(dbUser.getUser().getAlias());
-        AuthTokenDTO authTokenDTO = new AuthTokenDTO(authToken, dbUser.getUser().getAlias());
+        AuthTokenDTO authTokenDTO = AuthTokenUtils.generateAuthToken(dbUser.getUser().getAlias());
         daoFactory.getAuthTokenDAO().insert(authTokenDTO);
 
         // Return successful response
-        return new AuthenticateResponse(dbUser.getUser(), authToken, true);
+        return new AuthenticateResponse(dbUser.getUser(), authTokenDTO.getAuthToken(), true);
     }
 
     public GetUserResponse getUser(SimpleUserRequest request) {

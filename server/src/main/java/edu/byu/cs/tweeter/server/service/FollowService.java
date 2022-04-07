@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.dto.AuthTokenDTO;
 import edu.byu.cs.tweeter.model.dto.FollowsDTO;
 import edu.byu.cs.tweeter.model.dto.UserDTO;
 import edu.byu.cs.tweeter.model.net.request.IsFollowerRequest;
@@ -110,7 +111,7 @@ public class FollowService extends Service{
     public SimpleResponse updateFollowingRelationship(SimpleUserRequest request, boolean follow) {
         verifySimpleUserRequest(request);
 
-        AuthToken dbAuthToken = daoFactory.getAuthTokenDAO().get(request.getAuthToken().getToken());
+        AuthTokenDTO dbAuthToken = daoFactory.getAuthTokenDAO().get(request.getAuthToken().getToken());
         String followerAlias = dbAuthToken.getAlias();
         String followeeAlias = request.getTargetUserAlias();
 

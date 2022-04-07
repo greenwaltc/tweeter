@@ -1,6 +1,7 @@
 package edu.byu.cs.tweeter.server.service;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.dto.AuthTokenDTO;
 import edu.byu.cs.tweeter.model.net.request.SimpleUserRequest;
 import edu.byu.cs.tweeter.model.net.request.UsersRequest;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
@@ -14,14 +15,14 @@ public abstract class Service {
     }
 
     protected void verifyAuthToken(AuthToken authToken) {
-        AuthToken dbAuthToken = daoFactory.getAuthTokenDAO().get(authToken.getToken());
+        AuthTokenDTO dbAuthToken = daoFactory.getAuthTokenDAO().get(authToken.getToken());
         if (dbAuthToken == null) {
             throw new RuntimeException("[BadRequest] Access denied");
         }
-        else if (AuthTokenUtils.verifyAuthToken(dbAuthToken)) {
-            daoFactory.getAuthTokenDAO().update(dbAuthToken); // Update with new timestamp
+        else if (AuthTokenUtils.verifyAuthToken(dbAuthToken.getAuthToken())) {
+            daoFactory.getAuthTokenDAO().update(dbAuthToken.getAuthToken()); // Update with new timestamp
         } else {
-            daoFactory.getAuthTokenDAO().delete(dbAuthToken);
+            daoFactory.getAuthTokenDAO().delete(dbAuthToken.getAuthToken());
             throw new RuntimeException("[BadRequest] Access denied");
         }
     }

@@ -14,6 +14,7 @@ import edu.byu.cs.tweeter.model.net.request.StatusesRequest;
 import edu.byu.cs.tweeter.model.net.response.SimpleResponse;
 import edu.byu.cs.tweeter.model.net.response.StatusesResponse;
 import edu.byu.cs.tweeter.server.dao.DAOFactory;
+import edu.byu.cs.tweeter.server.dao.StatusDAO;
 import edu.byu.cs.tweeter.util.JsonSerializer;
 import edu.byu.cs.tweeter.util.Pair;
 
@@ -77,6 +78,7 @@ public class StatusService extends Service{
 
         String lastItemValue = request.getLastItem() == null ? null : request.getLastItem().getDate();
 
+        StatusDAO storyDao = daoFactory.getStoryDAO();
         Pair<List<Status>, Boolean> getStoryResult = daoFactory.getStoryDAO()
                 .getStatuses(request.getUserAlias(), request.getLimit(), lastItemValue);
         List<Status> story = getStoryResult.getFirst();

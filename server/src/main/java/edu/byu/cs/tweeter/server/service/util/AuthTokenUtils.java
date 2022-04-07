@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.dto.AuthTokenDTO;
 
 public class AuthTokenUtils {
 
@@ -16,10 +17,9 @@ public class AuthTokenUtils {
         return new AuthToken(tokenValue, datetime);
     }
 
-    public static AuthToken generateAuthToken(String alias) {
+    public static AuthTokenDTO generateAuthToken(String alias) {
         AuthToken authToken = generateAuthToken();
-        authToken.setAlias(alias);
-        return authToken;
+        return new AuthTokenDTO(authToken, alias);
     }
 
     public static boolean verifyAuthToken(AuthToken authToken) {

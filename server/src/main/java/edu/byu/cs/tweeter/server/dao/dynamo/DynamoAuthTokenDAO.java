@@ -22,7 +22,7 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO {
             TableAliasKey = "alias";
 
     @Override
-    public AuthToken get(String tokenValue) {
+    public AuthTokenDTO get(String tokenValue) {
         GetItemSpec spec = new GetItemSpec()
                 .withPrimaryKey(TablePrimaryKey, tokenValue);
         try {
@@ -30,9 +30,9 @@ public class DynamoAuthTokenDAO extends DynamoDAO implements AuthTokenDAO {
             if (outcome == null) {
                 return null;
             }
-            return new AuthToken((String) outcome.get(TablePrimaryKey),
-                    (String) outcome.get(TableDatetimeKey),
-                    (String) outcome.get(TableAliasKey));
+            AuthToken authToken = new AuthToken((String) outcome.get(TablePrimaryKey), (String) outcome.get(TableDatetimeKey));
+            AuthTokenDTO authTokenDTO = new AuthTokenDTO(authToken, (String) outcome.get(TableAliasKey));
+            return authTokenDTO;
         } catch (Exception e) {
             throw new RuntimeException("[ServerError] Unable to read from " + getTableName());
         }
