@@ -50,20 +50,22 @@ public class StatusServicePagedStoryTest {
     @org.junit.Before
     public void setUp() throws Exception {
 
+        // Mock up dependencies
         mockDaoFactory = mock(DAOFactory.class);
         mockStoryDao = mock(StatusDAO.class);
         mockAuthTokenDao = mock(AuthTokenDAO.class);
 
         spyService = spy(new StatusService(mockDaoFactory));
 
+        // Stub mock methods
         when(mockDaoFactory.getStoryDAO()).thenReturn(mockStoryDao);
         when(mockDaoFactory.getAuthTokenDAO()).thenReturn(mockAuthTokenDao);
+        when(mockAuthTokenDao.get(anyString())).thenReturn(dbAuthToken);
 
         doNothing().when(mockAuthTokenDao).update(any());
         doNothing().when(mockAuthTokenDao).delete(any());
 
         doReturn(new Pair(story, false)).when(mockStoryDao).getStatuses(anyString(), anyInt(), any());
-        when(mockAuthTokenDao.get(anyString())).thenReturn(dbAuthToken);
     }
 
     @org.junit.After
